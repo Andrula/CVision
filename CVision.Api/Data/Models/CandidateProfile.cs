@@ -12,14 +12,21 @@ public class CandidateProfile
     public string ProfileSummary { get; set; } = string.Empty;
     public int MatchScore { get; set; }
 
-    [Column(TypeName = "jsonb")] 
-    public List<string> Skills { get; set; } = new();
-    public List<string> Strengths { get; set; } = new();
-    public List<string> Weaknesses { get; set; } = new();
+    [Column(TypeName = "jsonb")]
+    public string Skills { get; set; }
+
+    [Column(TypeName = "jsonb")]
+    public string Strengths { get; set; }
+
+    [Column(TypeName = "jsonb")]
+    public string Weaknesses { get; set; }
+
 
     public string AnalysisSummary { get; set; } = string.Empty;
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+    public int CandidateId { get; set; }
+    public Candidate Candidate { get; set; }
     public Job? Job { get; set; }
 }

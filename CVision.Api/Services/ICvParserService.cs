@@ -1,5 +1,4 @@
 public interface ICvParserService
 {
-    Task<string> ExtractTextAsync(IFormFile file);
-    Task<Candidate> ParseCandidateAsync(string rawText, int jobId);
+ Task<CandidateProfileDTO?> ParseCandidateFromFileAsync(IFormFile file, int jobId, string jobTitle, string jobDescription);
 }

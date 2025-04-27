@@ -17,12 +17,10 @@ const JobCard = ({ id, title, description, createdAt, applicantCount = 0 }: JobC
           {title}
         </h2>
 
-        {/* Truncated description */}
         <p className="text-sm text-gray-600 dark:text-gray-300 overflow-hidden text-ellipsis line-clamp-3">
           {description}
         </p>
 
-        {/* Bottom pill row */}
         <div className="flex justify-between items-center mt-4">
           <span className="text-xs bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-full flex items-center gap-1">
             👥 {applicantCount} {applicantCount === 1 ? "Applicant" : "Applicants"}

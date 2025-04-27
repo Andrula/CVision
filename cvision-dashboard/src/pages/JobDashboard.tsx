@@ -28,10 +28,8 @@ const JobDashboard = () => {
 
   return (
     <div className="min-h-screen w-screen bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100 flex flex-col">
-      {/* Header */}
       <Header />
 
-      {/* Content */}
       <div className="text-center mt-6">
         <h2 className="text-4xl font-extrabold text-blue-700 dark:text-blue-400">CVision</h2>
         <p className="text-xl font-semibold text-gray-800 dark:text-gray-300 mt-1">Job Positions</p>
@@ -73,11 +71,20 @@ const JobDashboard = () => {
       {loading ? (
         <p className="text-center text-gray-500 mt-4">Loading jobs...</p>
       ) : (
-        <div className="flex flex-wrap gap-4 justify-center w-full px-6 pb-8">
-          {jobs.map((job) => (
-            <JobCard key={job.id} id={job.id} title={job.title} description={job.description} createdAt={job.createdAt} applicantCount={job.applicantCount}  />
-          ))}
-        </div>
+        !showForm && ( 
+          <div className="flex flex-wrap gap-4 justify-center w-full px-6 pb-8">
+            {jobs.map((job) => (
+              <JobCard
+                key={job.id}
+                id={job.id}
+                title={job.title}
+                description={job.description}
+                createdAt={job.createdAt}
+                applicantCount={job.applicantCount}
+              />
+            ))}
+          </div>
+        )
       )}
     </div>
   );

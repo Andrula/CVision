@@ -7,7 +7,9 @@ var AllowFrontendCommunication = "_AllowFrontendCommunication";
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
-builder.Services.AddScoped<ICvParserService, MockCvParserService>();
+builder.Services.AddHttpClient<PythonCVParserService>();
+builder.Services.AddScoped<ICvParserService, PythonCVParserService>();
+
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));

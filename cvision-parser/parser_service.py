@@ -13,23 +13,26 @@ def extract_text_from_pdf(path):
 
 def call_openai_parser(cv_text, job_title, job_description):
     prompt = f"""
-You are an expert HR recruiter helping to evaluate applicants for a job.
+Du er en HR medarbejder, ansat til og evaluere ansøgere til en stilling.
 
-The following is a job title and description:
+Følgende er en jobtitel og jobbeskrivelse:
 
-Job Title:
+Job titel:
 {job_title}
 
-Job Description:
+Job beskrivelse:
 {job_description}
 
-Here is the full CV of an applicant:
+Her er ét CV fra en medarbejder.
 {cv_text}
 
-Your task:
-- Parse the applicant’s CV and extract structured data.
-- Assess the CV’s relevance to the job description.
-- Return a JSON object with the following fields:
+Dit job er at:
+- Analysere ansøgers CV og udtrække struktureret data.
+- Derefter skal du analysere ansøger op imod jobstillingen.
+- Til sidst skal du returnere et JSON objekt med følgende felter:
+
+Note: 
+Til skills skal du kun udtrække relevante skills til stillingen.
 
 {{
   "applicant": {{
@@ -65,7 +68,7 @@ Your task:
   }}
 }}
 
-Output only the JSON.
+Output kun JSON.
 """  
     response = client.chat.completions.create(
         model="gpt-4",

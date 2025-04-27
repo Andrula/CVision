@@ -1,7 +1,10 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useRef, useState, DragEvent } from "react";
 import Header from "../components/Header";
+import { fetchSkillDistribution } from "../services/api";
 import CandidateRow from "../components/CandidateRow";
+import MatchScoreChart from "../components/MatchScoreChart";
+import SkillDistributionChart from "../components/SkillDistributionChart";
 
 const JobDetail = () => {
   const { id } = useParams();
@@ -10,7 +13,9 @@ const JobDetail = () => {
   const [loading, setLoading] = useState(true);
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [skills, setSkills] = useState<{ skill: string; count: number }[]>([]);
 
   useEffect(() => {
     const fetchJobAndCandidates = async () => {
@@ -21,6 +26,11 @@ const JobDetail = () => {
 
         const candRes = await fetch(`http://localhost:5000/api/jobs/${id}/candidates`);
         const candData = await candRes.json();
+
+        fetchSkillDistribution(Number(id))
+          .then(setSkills)
+          .catch((err) => console.error("Failed to fetch skills", err));
+
         setCandidates(candData);
       } catch (err) {
         console.error("Failed to fetch job or candidates", err);
@@ -51,7 +61,10 @@ const JobDetail = () => {
   const handleUpload = async () => {
     if (!selectedFiles.length) return;
 
-    for (const file of selectedFiles) {
+    setUploadingIndex(0);
+
+    for (let i = 0; i < selectedFiles.length; i++) {
+      const file = selectedFiles[i];
       const formData = new FormData();
       formData.append("file", file);
       formData.append("jobId", id!.toString());
@@ -69,11 +82,25 @@ const JobDetail = () => {
       } catch (err) {
         console.error("Error uploading file:", err);
       }
+
+      setUploadingIndex(i + 1);
     }
 
-    setSelectedFiles([]); // Clear after upload
-  };
+    setUploadingIndex(null);
+    setSelectedFiles([]);
 
+    try {
+      const candRes = await fetch(`http://localhost:5000/api/jobs/${id}/candidates`);
+      const candData = await candRes.json();
+      setCandidates(candData);
+    } catch (err) {
+      console.error("Failed to refresh candidates", err);
+    }
+
+    fetchSkillDistribution(Number(id))
+      .then(setSkills)
+      .catch((err) => console.error("Failed to refresh skills", err));
+  };
 
   if (loading) return <p className="p-6">Loading...</p>;
   if (!job) return <p className="p-6">Job not found.</p>;
@@ -81,15 +108,32 @@ const JobDetail = () => {
   return (
     <>
       <Header />
-      <div className="min-h-screen w-screen bg-gray-50 text-gray-900 dark:bg-gray-800 dark:text-gray-100 p-6 flex flex-col">
-        <div className="max-w-5xl w-full mx-auto">
-          <h1 className="text-3xl font-bold text-blue-700 dark:text-blue-400">{job.title}</h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-2">{job.description}</p>
+      <div className="min-h-screen w-screen bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 p-6 flex flex-col">
+        <div className="w-full mx-auto">
 
-          <hr className="my-6 border-gray-300 dark:border-gray-600" />
-
-          {candidates.length === 0 ? (
+          {(uploadingIndex !== null || (candidates.length === 0 && selectedFiles.length > 0)) ? (
             <>
+              {/* Uploading Progress Box */}
+              <h1 className="text-3xl font-bold text-blue-700 dark:text-blue-400 mb-4">{job.title}</h1>
+              <p className="text-gray-600 dark:text-gray-300 whitespace-pre-line mb-6 line-clamp-6">{job.description}</p>
+
+              <div
+                className={`border-2 border-dashed rounded-lg p-10 text-center transition-colors duration-300 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600`}
+              >
+                <div className="flex flex-col items-center justify-center space-y-4">
+                  <div className="w-10 h-10 border-4 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+                  <p className="text-blue-600 dark:text-blue-400 font-semibold">
+                    Behandler {uploadingIndex} ud af {selectedFiles.length} ansøgere...
+                  </p>
+                </div>
+              </div>
+            </>
+          ) : candidates.length === 0 ? (
+            <>
+              {/* Drop CV box */}
+              <h1 className="text-3xl font-bold text-blue-700 dark:text-blue-400 mb-4">{job.title}</h1>
+              <p className="text-gray-600 dark:text-gray-300 whitespace-pre-line mb-6 line-clamp-6">{job.description}</p>
+
               <div
                 className={`border-2 border-dashed rounded-lg p-10 text-center transition-colors duration-300 cursor-pointer
                 ${isDragging ? "bg-blue-100 border-blue-400" : "bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600"}`}
@@ -126,13 +170,35 @@ const JobDetail = () => {
               )}
             </>
           ) : (
-            <ul className="mt-6">
-            {candidates
-              .sort((a, b) => (b.matchScore ?? 0) - (a.matchScore ?? 0))
-              .map((c) => (
-                <CandidateRow key={c.id} candidate={{ ...c, jobId: Number(id) }} />
-              ))}
-          </ul>
+            <>
+              {/* Report view */}
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 px-6 py-10">
+                <div className="lg:col-span-3 space-y-8">
+                  <div>
+                    <h1 className="text-3xl font-bold text-blue-700 dark:text-blue-400">{job.title}</h1>
+                    <p className="text-gray-700 dark:text-gray-300 mt-2 line-clamp-6">{job.description}</p>
+                  </div>
+
+                  <hr className="border-gray-300 dark:border-gray-600" />
+                  <MatchScoreChart matchScores={candidates.map(c => c.matchScore)} />
+                  <SkillDistributionChart data={skills} />
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 rounded shadow p-4 h-fit">
+                  <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">
+                    Ansøgere ({candidates.length})
+                  </h2>
+                  <div className="space-y-4">
+                    {candidates
+                      .slice()
+                      .sort((a, b) => b.matchScore - a.matchScore)
+                      .map((candidate) => (
+                        <CandidateRow key={candidate.id} candidate={candidate} />
+                      ))}
+                  </div>
+                </div>
+              </div>
+            </>
           )}
         </div>
       </div>

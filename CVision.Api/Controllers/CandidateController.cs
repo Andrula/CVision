@@ -14,12 +14,21 @@ public class CandidatesController : ControllerBase
         _parser = parser;
     }
 
-
     [HttpGet("/api/jobs/{jobId}/candidates")]
     public async Task<ActionResult<IEnumerable<Candidate>>> GetCandidates(int jobId)
     {
-        var candidates = _context.Candidates.Where(c => c.JobId == jobId).ToList();
-        return Ok(candidates);
+        var profiles = await _context.CandidateProfiles
+        .Where(p => p.JobId == jobId)
+        .Select(p => new
+        {
+            p.Id,
+            p.JobId,
+            p.Name,
+            p.MatchScore
+        })
+        .ToListAsync();
+
+        return Ok(profiles);
     }
 
     [HttpPost("upload")]
@@ -31,12 +40,86 @@ public class CandidatesController : ControllerBase
         var job = await _context.Jobs.FindAsync(jobId);
         if (job == null) return NotFound("Job not found.");
 
-        var text = await _parser.ExtractTextAsync(file);
-        var candidate = await _parser.ParseCandidateAsync(text, jobId);
+        var candidate = new Candidate
+        {
+            JobId = jobId,
+            FileName = file.FileName,
+            UploadedAt = DateTime.UtcNow,
+            Name = "Parsing..."
+        };
 
         _context.Candidates.Add(candidate);
         await _context.SaveChangesAsync();
 
-        return Ok(candidate);
+        try
+        {
+
+            var parsed = await _parser.ParseCandidateFromFileAsync(file, jobId, job.Title, job.Description);
+
+            if (parsed != null)
+            {
+                var profile = new CandidateProfile
+                {
+                    JobId = parsed.JobId,
+                    Name = parsed.Name,
+                    Email = parsed.Email,
+                    Phone = parsed.Phone,
+                    Location = parsed.Location,
+                    ProfileSummary = parsed.ProfileSummary,
+                    MatchScore = parsed.MatchScore,
+                    Skills = JsonSerializer.Serialize(parsed.Skills),
+                    Strengths = JsonSerializer.Serialize(parsed.Strengths),
+                    Weaknesses = JsonSerializer.Serialize(parsed.Weaknesses),
+                    AnalysisSummary = parsed.AnalysisSummary,
+                    CreatedAt = DateTime.UtcNow,
+
+                    CandidateId = candidate.Id
+                };
+
+                _context.CandidateProfiles.Add(profile);
+
+                candidate.Name = parsed.Name;
+                _context.Candidates.Update(candidate);
+            }
+
+            await _context.SaveChangesAsync();
+            return Ok(candidate);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "Parsing failed", details = ex.Message });
+        }
+    }
+
+    [HttpGet("profile/{id}")]
+    public async Task<IActionResult> GetProfile(int id)
+    {
+        var profile = await _context.CandidateProfiles.FindAsync(id);
+        if (profile == null) return NotFound();
+        return Ok(profile);
+    }
+
+    [HttpPost("profile")]
+    public async Task<IActionResult> SaveProfile([FromBody] CandidateProfileDTO dto)
+    {
+        var profile = new CandidateProfile
+        {
+            JobId = dto.JobId,
+            Name = dto.Name,
+            Email = dto.Email,
+            Phone = dto.Phone,
+            Location = dto.Location,
+            ProfileSummary = dto.ProfileSummary,
+            MatchScore = dto.MatchScore,
+            Skills = JsonSerializer.Serialize(dto.Skills),
+            Strengths = JsonSerializer.Serialize(dto.Strengths),
+            Weaknesses = JsonSerializer.Serialize(dto.Weaknesses),
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _context.CandidateProfiles.Add(profile);
+        await _context.SaveChangesAsync();
+
+        return Ok(profile);
     }
 }

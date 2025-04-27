@@ -133,3 +133,4 @@ C:\Users\xAndr\Desktop\CVision\CVision.Api\obj\Debug\net8.0\refint\CVision.Api.d
 C:\Users\xAndr\Desktop\CVision\CVision.Api\obj\Debug\net8.0\CVision.Api.pdb
 C:\Users\xAndr\Desktop\CVision\CVision.Api\obj\Debug\net8.0\CVision.Api.genruntimeconfig.cache
 C:\Users\xAndr\Desktop\CVision\CVision.Api\obj\Debug\net8.0\ref\CVision.Api.dll
+C:\Users\xAndr\Desktop\CVision\CVision.Api\obj\Debug\net8.0\CVision.Api.sourcelink.json

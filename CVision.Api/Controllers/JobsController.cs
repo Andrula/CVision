@@ -36,6 +36,27 @@ public class JobsController : ControllerBase
         return job;
     }
 
+    [HttpGet("job/{jobId}")]
+    public async Task<IActionResult> GetCandidatesForJob(int jobId)
+    {
+        var candidates = await _context.Candidates
+         .Where(c => c.JobId == jobId)
+         .Select(c => new
+         {
+             c.Id,
+             c.JobId,
+             c.Name,
+             MatchScore = _context.CandidateProfiles
+                 .Where(p => p.CandidateId == c.Id)
+                 .Select(p => p.MatchScore)
+                 .FirstOrDefault()
+         })
+         .ToListAsync();
+
+        return Ok(candidates);
+    }
+
+
     [HttpPost]
     public async Task<ActionResult<Job>> CreateJob(Job job)
     {
@@ -53,5 +74,25 @@ public class JobsController : ControllerBase
         await _context.SaveChangesAsync();
         return NoContent();
     }
-}
 
+    [HttpGet("{jobId}/skills")]
+    public IActionResult GetSkillDistribution(int jobId)
+    {
+        var profiles = _context.CandidateProfiles
+            .Where(p => p.JobId == jobId && p.Skills != null)
+            .ToList();
+
+        var allSkills = profiles
+            .SelectMany(p => JsonSerializer.Deserialize<List<string>>(p.Skills))
+            .Where(skill => !string.IsNullOrWhiteSpace(skill))
+            .ToList();
+
+        var grouped = allSkills
+            .GroupBy(s => s)
+            .Select(g => new { Skill = g.Key, Count = g.Count() })
+            .ToList();
+
+        return Ok(grouped);
+    }
+
+}
