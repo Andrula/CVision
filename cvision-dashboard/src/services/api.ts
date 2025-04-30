@@ -14,6 +14,7 @@ export type Candidate = {
   name: string;
   matchScore: number;
   profileSummary: string;
+  experienceYears: number;
 };
 
 export async function fetchJobs(): Promise<Job[]> {

@@ -5,6 +5,7 @@ import { fetchSkillDistribution } from "../services/api";
 import CandidateRow from "../components/CandidateRow";
 import MatchScoreChart from "../components/MatchScoreChart";
 import SkillDistributionChart from "../components/SkillDistributionChart";
+import ExperienceMatchScoreCorrelation from "../components/ExperienceMatchScoreCorrelation";
 
 const JobDetail = () => {
   const { id } = useParams();
@@ -63,6 +64,7 @@ const JobDetail = () => {
     console.log("Upload started");
     if (!selectedFiles.length) return;
 
+    setUploadStarted(true); // 👈 FIX
     setUploadingIndex(0);
 
     for (let i = 0; i < selectedFiles.length; i++) {
@@ -115,13 +117,10 @@ const JobDetail = () => {
 
           {(uploadStarted) ? (
             <>
-              {/* Uploading Progress Box */}
               <h1 className="text-3xl font-bold text-blue-700 dark:text-blue-400 mb-4">{job.title}</h1>
               <p className="text-gray-600 dark:text-gray-300 whitespace-pre-line mb-6 line-clamp-6">{job.description}</p>
 
-              <div
-                className={`border-2 border-dashed rounded-lg p-10 text-center transition-colors duration-300 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600`}
-              >
+              <div className={`border-2 border-dashed rounded-lg p-10 text-center bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600`}>
                 <div className="flex flex-col items-center justify-center space-y-4">
                   <div className="w-10 h-10 border-4 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
                   <p className="text-blue-600 dark:text-blue-400 font-semibold">
@@ -132,13 +131,12 @@ const JobDetail = () => {
             </>
           ) : candidates.length === 0 ? (
             <>
-              {/* Drop CV box */}
               <h1 className="text-3xl font-bold text-blue-700 dark:text-blue-400 mb-4">{job.title}</h1>
               <p className="text-gray-600 dark:text-gray-300 whitespace-pre-line mb-6 line-clamp-6">{job.description}</p>
 
               <div
-                className={`border-2 border-dashed rounded-lg p-10 text-center transition-colors duration-300 cursor-pointer
-                ${isDragging ? "bg-blue-100 border-blue-400" : "bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600"}`}
+                className={`border-2 border-dashed rounded-lg p-10 text-center cursor-pointer
+                  ${isDragging ? "bg-blue-100 border-blue-400" : "bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600"}`}
                 onClick={handleFileClick}
                 onDragOver={(e) => {
                   e.preventDefault();
@@ -173,7 +171,6 @@ const JobDetail = () => {
             </>
           ) : (
             <>
-              {/* Report view */}
               <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 px-6 py-10">
                 <div className="lg:col-span-3 space-y-8">
                   <div>
@@ -183,6 +180,7 @@ const JobDetail = () => {
 
                   <hr className="border-gray-300 dark:border-gray-600" />
                   <MatchScoreChart matchScores={candidates.map(c => c.matchScore)} />
+                  <ExperienceMatchScoreCorrelation candidates={candidates} />
                   <SkillDistributionChart data={skills} />
                 </div>
 

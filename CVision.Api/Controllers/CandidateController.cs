@@ -24,7 +24,8 @@ public class CandidatesController : ControllerBase
             p.Id,
             p.JobId,
             p.Name,
-            p.MatchScore
+            p.MatchScore,
+            p.ExperienceYears
         })
         .ToListAsync();
 
@@ -65,6 +66,7 @@ public class CandidatesController : ControllerBase
                     Email = parsed.Email,
                     Phone = parsed.Phone,
                     Location = parsed.Location,
+                    ExperienceYears = parsed.ExperienceYears,
                     ProfileSummary = parsed.ProfileSummary,
                     MatchScore = parsed.MatchScore,
                     Skills = JsonSerializer.Serialize(parsed.Skills),
@@ -119,6 +121,7 @@ public class CandidatesController : ControllerBase
             Email = dto.Email,
             Phone = dto.Phone,
             Location = dto.Location,
+            ExperienceYears = dto.ExperienceYears,
             ProfileSummary = dto.ProfileSummary,
             MatchScore = dto.MatchScore,
             Skills = JsonSerializer.Serialize(dto.Skills),

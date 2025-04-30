@@ -37,7 +37,7 @@ const JobDashboard = () => {
           onClick={() => setShowForm(!showForm)}
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mt-3"
         >
-          {showForm ? "Cancel" : "New Position"}
+          {showForm ? "Afbryd" : "Ny stilling"}
         </button>
       </div>
 
@@ -47,13 +47,13 @@ const JobDashboard = () => {
         <div className="max-w-3xl mx-auto space-y-4 border p-4 rounded bg-gray-50 dark:bg-gray-800 mt-6">
           <input
             type="text"
-            placeholder="Job Title"
+            placeholder="Job titel"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="w-full p-2 border rounded dark:bg-gray-700 dark:text-white"
           />
           <textarea
-            placeholder="Paste job description..."
+            placeholder="Indtast job beskrivelse..."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={6}

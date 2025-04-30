@@ -23,10 +23,10 @@ const JobCard = ({ id, title, description, createdAt, applicantCount = 0 }: JobC
 
         <div className="flex justify-between items-center mt-4">
           <span className="text-xs bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-full flex items-center gap-1">
-            👥 {applicantCount} {applicantCount === 1 ? "Applicant" : "Applicants"}
+            👥 {applicantCount} {applicantCount === 1 ? "Ansøger" : "Ansøgere"}
           </span>
           <span className="text-xs bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-full flex items-center gap-1">
-            📅 {createdAt ? new Date(createdAt).toLocaleDateString() : "Unknown"}
+            📅 {createdAt ? new Date(createdAt).toLocaleDateString() : "Ukendt"}
           </span>
         </div>
       </div>
