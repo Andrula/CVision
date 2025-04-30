@@ -60,7 +60,7 @@ public class CandidatesController : ControllerBase
             {
                 var profile = new CandidateProfile
                 {
-                    JobId = parsed.JobId,
+                    JobId = jobId,
                     Name = parsed.Name,
                     Email = parsed.Email,
                     Phone = parsed.Phone,
@@ -82,12 +82,22 @@ public class CandidatesController : ControllerBase
                 _context.Candidates.Update(candidate);
             }
 
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                var inner = ex.InnerException?.Message ?? "No inner exception";
+                throw new Exception("EF Save error: " + inner, ex);
+            }
+
             return Ok(candidate);
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "Parsing failed", details = ex.Message });
+            Console.WriteLine("UPLOAD ERROR: " + ex.ToString());
+            return StatusCode(500, new { error = "Parsing failed", details = ex.Message, stack = ex.StackTrace });
         }
     }
 

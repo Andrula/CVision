@@ -14,6 +14,7 @@ const JobDetail = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
+  const [uploadStarted, setUploadStarted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [skills, setSkills] = useState<{ skill: string; count: number }[]>([]);
 
@@ -59,6 +60,7 @@ const JobDetail = () => {
   };
 
   const handleUpload = async () => {
+    console.log("Upload started");
     if (!selectedFiles.length) return;
 
     setUploadingIndex(0);
@@ -74,7 +76,6 @@ const JobDetail = () => {
           method: "POST",
           body: formData,
         });
-
         if (!res.ok) throw new Error("Upload failed");
 
         const candidate = await res.json();
@@ -87,6 +88,7 @@ const JobDetail = () => {
     }
 
     setUploadingIndex(null);
+    setUploadStarted(false);
     setSelectedFiles([]);
 
     try {
@@ -111,7 +113,7 @@ const JobDetail = () => {
       <div className="min-h-screen w-screen bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 p-6 flex flex-col">
         <div className="w-full mx-auto">
 
-          {(uploadingIndex !== null || (candidates.length === 0 && selectedFiles.length > 0)) ? (
+          {(uploadStarted) ? (
             <>
               {/* Uploading Progress Box */}
               <h1 className="text-3xl font-bold text-blue-700 dark:text-blue-400 mb-4">{job.title}</h1>

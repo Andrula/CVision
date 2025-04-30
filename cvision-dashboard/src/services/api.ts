@@ -44,3 +44,20 @@ export async function fetchSkillDistribution(jobId: number): Promise<{ skill: st
   return await res.json();
 }
 
+export async function uploadCV(jobId: number, file: File): Promise<any> {
+  const formData = new FormData();
+  formData.append("jobId", String(jobId));
+  formData.append("file", file);
+  
+  console.log("Uploading to backend...");
+  const res = await fetch(`${API_BASE}/candidates/upload`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!res.ok) throw new Error("Failed to upload CV");
+  return await res.json();
+}
+
+
+
