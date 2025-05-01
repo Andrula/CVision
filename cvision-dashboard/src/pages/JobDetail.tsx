@@ -171,18 +171,68 @@ const JobDetail = () => {
             </>
           ) : (
             <>
+              <div className="flex flex-wrap justify-between items-center px-2 py-2 gap-4 border-b border-gray-300 dark:border-gray-700 mb-6">
+                {/* LEFT SIDE */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    onClick={() => window.history.back()}
+                    className="text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1"
+                  >
+                    ← Tilbage
+                  </button>
+
+                  <h1 className="text-xl font-bold text-blue-700 dark:text-blue-400">{job.title}</h1>
+
+                  <span className="text-xs bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-full flex items-center gap-1">
+                    👥 {candidates.length} {candidates.length === 1 ? "Ansøger" : "Ansøgere"}
+                  </span>
+
+                  <span className="text-xs bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-full flex items-center gap-1">
+                    📅 {job.createdAt ? new Date(job.createdAt).toLocaleDateString() : "Ukendt"}
+                  </span>
+                </div>
+
+                {/* RIGHT SIDE */}
+                <div className="flex items-center gap-4 flex-wrap">
+                  <button
+                    onClick={() => {/* download logic */ }}
+                    className="text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
+                  >
+                    Download rapport
+                  </button>
+
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
+                  >
+                    Tilføj flere CV’er
+                  </button>
+
+                  <button
+                    onClick={() => setCandidates([])}
+                    className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+                  >
+                    Slet alle
+                  </button>
+                </div>
+
+              </div>
+
+
               <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 px-6 py-10">
                 <div className="lg:col-span-3 space-y-8">
                   <div>
                     <h1 className="text-3xl font-bold text-blue-700 dark:text-blue-400">{job.title}</h1>
                     <p className="text-gray-700 dark:text-gray-300 mt-2 line-clamp-6">{job.description}</p>
+
+                    <hr className="border-gray-300 dark:border-gray-600 mt-4" />
                   </div>
 
-                  <hr className="border-gray-300 dark:border-gray-600" />
                   <MatchScoreChart matchScores={candidates.map(c => c.matchScore)} />
                   <ExperienceMatchScoreCorrelation candidates={candidates} />
                   <SkillDistributionChart data={skills} />
                 </div>
+
 
                 <div className="bg-white dark:bg-gray-800 rounded shadow p-4 h-fit">
                   <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">

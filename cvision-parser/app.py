@@ -75,10 +75,8 @@ async def parse_cv(cv_file: UploadFile = File(...), job_file: UploadFile = File(
     "  \"analysisSummary\": str\n"
     "}\n\n"
     "Tilføj feltet \"experienceYears\" som det estimerede antal år kandidaten har relevant professionel erfaring. "
-    "MatchScore skal vurderes ud fra hvor godt kandidatens færdigheder, erfaring og profil matcher kravene i jobbeskrivelsen. "
-    "Scoren skal være lav, hvis der er få eller ingen relevante kvalifikationer, selv hvis kandidaten har stærke generelle kompetencer. "
-    "Styrker og analyse kan gerne nævne andre kvaliteter, som kunne være værdifulde i teamet, selv hvis de ikke passer 1:1 til jobbet. "
-    "Negative ting kunne f.eks. være afstand fra bopæl til jobbet, medmindre det er remote arbejde. "
+    "“MatchScore skal tage højde for både direkte erfaring og relevante beslægtede færdigheder i forhold til jobbeskrivelsen. Hvis kandidaten har stærke færdigheder i beslægtede teknologier eller områder, der understøtter de vigtigste krav i jobbet, og/eller udtrykker motivation for at lære de specifikke nødvendige færdigheder, bør scoren afspejle dette potentiale.”"
+    "Styrker og analyse kan gerne nævne andre kvaliteter, som kunne være værdifulde i teamet, selv hvis de ikke passer 1:1 til jobbet. Svagheder kunne være ting som afstand fra bopæl til jobbet, medmindre det er remote arbejde. "
     "Skills skal kun indeholde ting der rent faktisk nævnes i CV'et. Gæt ikke. "
     "Ingen forklaringer. Kun gyldig JSON. Alt output skal være på dansk."
         )
