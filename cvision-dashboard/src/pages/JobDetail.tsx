@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState, DragEvent } from "react";
 import Header from "../components/Header";
 import { fetchSkillDistribution } from "../services/api";
@@ -18,6 +18,7 @@ const JobDetail = () => {
   const [uploadStarted, setUploadStarted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [skills, setSkills] = useState<{ skill: string; count: number }[]>([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchJobAndCandidates = async () => {
@@ -175,7 +176,7 @@ const JobDetail = () => {
                 {/* LEFT SIDE */}
                 <div className="flex flex-wrap items-center gap-2">
                   <button
-                    onClick={() => window.history.back()}
+                    onClick={() => navigate(`/`)}
                     className="text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1"
                   >
                     ← Tilbage

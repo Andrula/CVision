@@ -74,6 +74,10 @@ namespace CVision.Api.Migrations
                     b.Property<int>("ExperienceYears")
                         .HasColumnType("integer");
 
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<int>("JobId")
                         .HasColumnType("integer");
 

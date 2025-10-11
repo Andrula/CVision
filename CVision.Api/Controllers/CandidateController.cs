@@ -1,138 +1,79 @@
+using CVision.Api.Services.Interfaces;
+using Microsoft.AspNetCore.Mvc;
+
 namespace CVision.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
 public class CandidatesController : ControllerBase
 {
-    private readonly AppDbContext _context;
-    private readonly IWebHostEnvironment _env;
-    private readonly ICvParserService _parser;
-    public CandidatesController(AppDbContext context, IWebHostEnvironment env, ICvParserService parser)
+    private readonly ICandidateService _candidateService;
+
+    public CandidatesController(ICandidateService candidateService)
     {
-        _context = context;
-        _env = env;
-        _parser = parser;
+        _candidateService = candidateService;
     }
 
     [HttpGet("/api/jobs/{jobId}/candidates")]
-    public async Task<ActionResult<IEnumerable<Candidate>>> GetCandidates(int jobId)
+    public async Task<IActionResult> GetCandidates(int jobId)
     {
-        var profiles = await _context.CandidateProfiles
-        .Where(p => p.JobId == jobId)
-        .Select(p => new
-        {
-            p.Id,
-            p.JobId,
-            p.Name,
-            p.MatchScore,
-            p.ExperienceYears
-        })
-        .ToListAsync();
-
-        return Ok(profiles);
+        var candidates = await _candidateService.GetCandidatesForJobAsync(jobId);
+        return Ok(candidates);
     }
 
     [HttpPost("upload")]
     public async Task<IActionResult> Upload([FromForm] int jobId, [FromForm] IFormFile file)
     {
-        if (file == null || file.Length == 0)
-            return BadRequest("No file uploaded.");
-
-        var job = await _context.Jobs.FindAsync(jobId);
-        if (job == null) return NotFound("Job not found.");
-
-        var candidate = new Candidate
-        {
-            JobId = jobId,
-            FileName = file.FileName,
-            UploadedAt = DateTime.UtcNow,
-            Name = "Parsing..."
-        };
-
-        _context.Candidates.Add(candidate);
-        await _context.SaveChangesAsync();
-
         try
         {
-
-            var parsed = await _parser.ParseCandidateFromFileAsync(file, jobId, job.Title, job.Description);
-
-            if (parsed != null)
-            {
-                var profile = new CandidateProfile
-                {
-                    JobId = jobId,
-                    Name = parsed.Name,
-                    Email = parsed.Email,
-                    Phone = parsed.Phone,
-                    Location = parsed.Location,
-                    ExperienceYears = parsed.ExperienceYears,
-                    ProfileSummary = parsed.ProfileSummary,
-                    MatchScore = parsed.MatchScore,
-                    Skills = JsonSerializer.Serialize(parsed.Skills),
-                    Strengths = JsonSerializer.Serialize(parsed.Strengths),
-                    Weaknesses = JsonSerializer.Serialize(parsed.Weaknesses),
-                    AnalysisSummary = parsed.AnalysisSummary,
-                    CreatedAt = DateTime.UtcNow,
-
-                    CandidateId = candidate.Id
-                };
-
-                _context.CandidateProfiles.Add(profile);
-
-                candidate.Name = parsed.Name;
-                _context.Candidates.Update(candidate);
-            }
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException ex)
-            {
-                var inner = ex.InnerException?.Message ?? "No inner exception";
-                throw new Exception("EF Save error: " + inner, ex);
-            }
-
+            var candidate = await _candidateService.UploadCandidateAsync(jobId, file);
             return Ok(candidate);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return NotFound(new { error = ex.Message });
         }
         catch (Exception ex)
         {
-            Console.WriteLine("UPLOAD ERROR: " + ex.ToString());
-            return StatusCode(500, new { error = "Parsing failed", details = ex.Message, stack = ex.StackTrace });
+            return StatusCode(500, new { error = "Upload failed", details = ex.Message });
         }
     }
 
     [HttpGet("profile/{id}")]
     public async Task<IActionResult> GetProfile(int id)
     {
-        var profile = await _context.CandidateProfiles.FindAsync(id);
-        if (profile == null) return NotFound();
+        var profile = await _candidateService.GetProfileAsync(id);
+        if (profile == null) 
+            return NotFound(new { error = "Profile not found" });
+        
         return Ok(profile);
     }
 
     [HttpPost("profile")]
     public async Task<IActionResult> SaveProfile([FromBody] CandidateProfileDTO dto)
     {
-        var profile = new CandidateProfile
+        try
         {
-            JobId = dto.JobId,
-            Name = dto.Name,
-            Email = dto.Email,
-            Phone = dto.Phone,
-            Location = dto.Location,
-            ExperienceYears = dto.ExperienceYears,
-            ProfileSummary = dto.ProfileSummary,
-            MatchScore = dto.MatchScore,
-            Skills = JsonSerializer.Serialize(dto.Skills),
-            Strengths = JsonSerializer.Serialize(dto.Strengths),
-            Weaknesses = JsonSerializer.Serialize(dto.Weaknesses),
-            CreatedAt = DateTime.UtcNow
-        };
+            var profile = await _candidateService.SaveProfileAsync(dto);
+            return Ok(profile);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "Failed to save profile", details = ex.Message });
+        }
+    }
 
-        _context.CandidateProfiles.Add(profile);
-        await _context.SaveChangesAsync();
+    [HttpGet("/api/candidates/profile/{id}/cv")]
+    public async Task<IActionResult> GetCandidateCV(int id)
+    {
+        var stream = await _candidateService.GetCandidateCvStreamAsync(id);
+        if (stream == null) 
+            return NotFound(new { error = "CV file not found" });
 
-        return Ok(profile);
+        return File(stream, "application/pdf", enableRangeProcessing: true);
     }
 }

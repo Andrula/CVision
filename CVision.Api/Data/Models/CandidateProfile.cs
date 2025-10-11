@@ -8,6 +8,7 @@ public class CandidateProfile
     public string Email { get; set; } = string.Empty;
     public string Phone { get; set; } = string.Empty;
     public string Location { get; set; } = string.Empty;
+        public string FileName { get; set; } = string.Empty;
     public int ExperienceYears { get; set; }
 
     public string ProfileSummary { get; set; } = string.Empty;

@@ -1,13 +1,28 @@
+using CVision.Api.Configuration;
+using CVision.Api.Services.Implementations;
+using CVision.Api.Services.Interfaces;
+
 var builder = WebApplication.CreateBuilder(args);
 
 var AllowFrontendCommunication = "_AllowFrontendCommunication";
 
 // Add services to the container.
+builder.Services.AddScoped<IFileStorageService, FileStorageService>();
+builder.Services.AddScoped<ICandidateService, CandidateService>();
+builder.Services.AddScoped<IJobService, JobService>();
+
+builder.Services.Configure<FileStorageSettings>(
+    builder.Configuration.GetSection("FileStorage"));
+builder.Services.Configure<CvParserSettings>(
+    builder.Configuration.GetSection("CvParser"));
+builder.Services.Configure<CorsSettings>(
+    builder.Configuration.GetSection("Cors"));
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
-builder.Services.AddHttpClient<ICvParserService, PythonCVParserService>(client =>
+builder.Services.AddHttpClient<IPythonCvParserService, PythonCVParserService>(client =>
 {
     client.Timeout = TimeSpan.FromMinutes(5);
 });
