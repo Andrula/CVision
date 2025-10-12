@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\xAndr\\Desktop\\CVision\\CVision.Api\\CVision.Api.csproj": {}
+    "c:\\Users\\xAndr\\Desktop\\CVision\\CVision.Api\\CVision.Api.csproj": {}
   },
   "projects": {
-    "C:\\Users\\xAndr\\Desktop\\CVision\\CVision.Api\\CVision.Api.csproj": {
+    "c:\\Users\\xAndr\\Desktop\\CVision\\CVision.Api\\CVision.Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\xAndr\\Desktop\\CVision\\CVision.Api\\CVision.Api.csproj",
+        "projectUniqueName": "c:\\Users\\xAndr\\Desktop\\CVision\\CVision.Api\\CVision.Api.csproj",
         "projectName": "CVision.Api",
-        "projectPath": "C:\\Users\\xAndr\\Desktop\\CVision\\CVision.Api\\CVision.Api.csproj",
+        "projectPath": "c:\\Users\\xAndr\\Desktop\\CVision\\CVision.Api\\CVision.Api.csproj",
         "packagesPath": "C:\\Users\\xAndr\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\xAndr\\Desktop\\CVision\\CVision.Api\\obj\\",
+        "outputPath": "c:\\Users\\xAndr\\Desktop\\CVision\\CVision.Api\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -63,6 +63,18 @@
             "Npgsql.EntityFrameworkCore.PostgreSQL": {
               "target": "Package",
               "version": "[9.0.4, )"
+            },
+            "Serilog.AspNetCore": {
+              "target": "Package",
+              "version": "[9.0.0, )"
+            },
+            "Serilog.Sinks.Console": {
+              "target": "Package",
+              "version": "[6.0.0, )"
+            },
+            "Serilog.Sinks.File": {
+              "target": "Package",
+              "version": "[7.0.0, )"
             },
             "Swashbuckle.AspNetCore": {
               "target": "Package",

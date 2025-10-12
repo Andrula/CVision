@@ -21,7 +21,9 @@ public class CandidateService : ICandidateService
 
     public async Task<IEnumerable<object>> GetCandidatesForJobAsync(int jobId)
     {
-        return await _context.CandidateProfiles
+        _logger.LogDebug("Fetching candidates for job {JobId}", jobId);
+        
+        var candidates = await _context.CandidateProfiles
             .Where(p => p.JobId == jobId)
             .Select(p => new
             {
@@ -32,11 +34,17 @@ public class CandidateService : ICandidateService
                 p.ExperienceYears
             })
             .ToListAsync();
+        
+        _logger.LogInformation("Retrieved {Count} candidates for job {JobId}", candidates.Count(), jobId);
+        
+        return candidates;
     }
 
     public async Task<IEnumerable<object>> GetCandidatesWithMatchScoreAsync(int jobId)
     {
-        return await _context.Candidates
+        _logger.LogDebug("Fetching candidates with match scores for job {JobId}", jobId);
+        
+        var candidates = await _context.Candidates
             .Where(c => c.JobId == jobId)
             .Select(c => new
             {
@@ -49,21 +57,42 @@ public class CandidateService : ICandidateService
                     .FirstOrDefault()
             })
             .ToListAsync();
+        
+        _logger.LogInformation("Retrieved {Count} candidates with match scores for job {JobId}", candidates.Count(), jobId);
+        
+        return candidates;
     }
 
     public async Task<CandidateProfile?> GetProfileAsync(int id)
     {
-        return await _context.CandidateProfiles.FindAsync(id);
+        _logger.LogDebug("Fetching profile {ProfileId}", id);
+        
+        var profile = await _context.CandidateProfiles.FindAsync(id);
+        
+        if (profile == null)
+            _logger.LogWarning("Profile {ProfileId} not found", id);
+        
+        return profile;
     }
 
     public async Task<Candidate> UploadCandidateAsync(int jobId, IFormFile file)
     {
+        _logger.LogInformation("Starting CV upload for job {JobId}, file: {FileName}, size: {FileSize}KB", 
+            jobId, file.FileName, file.Length / 1024);
+        
         if (file == null || file.Length == 0)
+        {
+            _logger.LogWarning("Upload attempted with empty file for job {JobId}", jobId);
             throw new ArgumentException("No file uploaded.");
+        }
 
         var job = await _context.Jobs.FindAsync(jobId);
+
         if (job == null)
+        {
+            _logger.LogWarning("Upload attempted for non-existent job {JobId}", jobId);
             throw new InvalidOperationException($"Job with ID {jobId} not found.");
+        }
 
         var candidate = new Candidate
         {
@@ -78,13 +107,23 @@ public class CandidateService : ICandidateService
 
         try
         {
+            _logger.LogInformation("Calling parser service for candidate {CandidateId}", candidate.Id);
+            var startTime = DateTime.UtcNow;
+            
             var parsed = await _parser.ParseCandidateFromFileAsync(
                 file, jobId, job.Title, job.Description);
+
+            var duration = (DateTime.UtcNow - startTime).TotalSeconds;
+            _logger.LogInformation("Parser completed in {Duration}s for candidate {CandidateId}", 
+                duration, candidate.Id);
 
             var uniqueFileName = await _fileStorage.SaveFileAsync(file);
 
             if (parsed != null)
             {
+                _logger.LogInformation("Parsed candidate: {Name}, Match: {MatchScore}%, Experience: {Years} years",
+                    parsed.Name, parsed.MatchScore, parsed.ExperienceYears);
+                
                 var profile = new CandidateProfile
                 {
                     JobId = jobId,
@@ -109,27 +148,35 @@ public class CandidateService : ICandidateService
                 candidate.Name = parsed.Name;
                 _context.Candidates.Update(candidate);
             }
+            else
+            {
+                _logger.LogWarning("Parser returned null for candidate {CandidateId}", candidate.Id);
+            }
 
             await _context.SaveChangesAsync();
-            _logger.LogInformation("Successfully uploaded and parsed candidate for job {JobId}", jobId);
+            _logger.LogInformation("Successfully saved candidate {CandidateId} ({Name}) for job {JobId}", 
+                candidate.Id, candidate.Name, jobId);
 
             return candidate;
         }
         catch (DbUpdateException ex)
         {
             var inner = ex.InnerException?.Message ?? "No inner exception";
-            _logger.LogError(ex, "Database error while saving candidate: {Error}", inner);
+            _logger.LogError(ex, "Database error saving candidate for job {JobId}: {Error}", jobId, inner);
             throw new Exception($"Database save error: {inner}", ex);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error uploading candidate for job {JobId}", jobId);
+            _logger.LogError(ex, "Failed to upload candidate for job {JobId}, file: {FileName}", 
+                jobId, file.FileName);
             throw;
         }
     }
 
     public async Task<CandidateProfile> SaveProfileAsync(CandidateProfileDTO dto)
     {
+        _logger.LogInformation("Saving candidate profile for job {JobId}: {Name}", dto.JobId, dto.Name);
+        
         var profile = new CandidateProfile
         {
             JobId = dto.JobId,
@@ -150,15 +197,20 @@ public class CandidateService : ICandidateService
         _context.CandidateProfiles.Add(profile);
         await _context.SaveChangesAsync();
 
-        _logger.LogInformation("Saved candidate profile: {Name}", profile.Name);
+        _logger.LogInformation("Saved candidate profile {ProfileId}: {Name}", profile.Id, profile.Name);
         return profile;
     }
 
     public async Task<Stream?> GetCandidateCvStreamAsync(int id)
     {
+        _logger.LogInformation("Retrieving CV file for profile {ProfileId}", id);
+        
         var profile = await _context.CandidateProfiles.FindAsync(id);
         if (profile == null || string.IsNullOrEmpty(profile.FileName))
+        {
+            _logger.LogWarning("CV file not found for profile {ProfileId}", id);
             return null;
+        }
 
         return await _fileStorage.GetFileStreamAsync(profile.FileName);
     }
