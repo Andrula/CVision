@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "p/wun2QQWa4=",
+  "dgSpecHash": "x9lR9vjyo5M=",
   "success": true,
-  "projectFilePath": "c:\\Users\\xAndr\\Desktop\\CVision\\CVision.Api\\CVision.Api.csproj",
+  "projectFilePath": "C:\\Users\\xAndr\\Desktop\\CVision\\CVision.Api\\CVision.Api.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\xAndr\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\xAndr\\.nuget\\packages\\microsoft.aspnetcore.openapi\\8.0.8\\microsoft.aspnetcore.openapi.8.0.8.nupkg.sha512",

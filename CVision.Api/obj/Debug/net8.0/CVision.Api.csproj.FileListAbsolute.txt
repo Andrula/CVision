@@ -134,3 +134,16 @@ C:\Users\xAndr\Desktop\CVision\CVision.Api\obj\Debug\net8.0\CVision.Api.pdb
 C:\Users\xAndr\Desktop\CVision\CVision.Api\obj\Debug\net8.0\CVision.Api.genruntimeconfig.cache
 C:\Users\xAndr\Desktop\CVision\CVision.Api\obj\Debug\net8.0\ref\CVision.Api.dll
 C:\Users\xAndr\Desktop\CVision\CVision.Api\obj\Debug\net8.0\CVision.Api.sourcelink.json
+C:\Users\xAndr\Desktop\CVision\CVision.Api\bin\Debug\net8.0\Microsoft.Extensions.Configuration.Binder.dll
+C:\Users\xAndr\Desktop\CVision\CVision.Api\bin\Debug\net8.0\Microsoft.Extensions.Diagnostics.Abstractions.dll
+C:\Users\xAndr\Desktop\CVision\CVision.Api\bin\Debug\net8.0\Microsoft.Extensions.FileProviders.Abstractions.dll
+C:\Users\xAndr\Desktop\CVision\CVision.Api\bin\Debug\net8.0\Microsoft.Extensions.Hosting.Abstractions.dll
+C:\Users\xAndr\Desktop\CVision\CVision.Api\bin\Debug\net8.0\Serilog.dll
+C:\Users\xAndr\Desktop\CVision\CVision.Api\bin\Debug\net8.0\Serilog.AspNetCore.dll
+C:\Users\xAndr\Desktop\CVision\CVision.Api\bin\Debug\net8.0\Serilog.Extensions.Hosting.dll
+C:\Users\xAndr\Desktop\CVision\CVision.Api\bin\Debug\net8.0\Serilog.Extensions.Logging.dll
+C:\Users\xAndr\Desktop\CVision\CVision.Api\bin\Debug\net8.0\Serilog.Formatting.Compact.dll
+C:\Users\xAndr\Desktop\CVision\CVision.Api\bin\Debug\net8.0\Serilog.Settings.Configuration.dll
+C:\Users\xAndr\Desktop\CVision\CVision.Api\bin\Debug\net8.0\Serilog.Sinks.Console.dll
+C:\Users\xAndr\Desktop\CVision\CVision.Api\bin\Debug\net8.0\Serilog.Sinks.Debug.dll
+C:\Users\xAndr\Desktop\CVision\CVision.Api\bin\Debug\net8.0\Serilog.Sinks.File.dll

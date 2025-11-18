@@ -7,11 +7,7 @@ public class CandidateService : ICandidateService
     private readonly IPythonCvParserService _parser;
     private readonly ILogger<CandidateService> _logger;
 
-    public CandidateService(
-        AppDbContext context,
-        IFileStorageService fileStorage,
-        IPythonCvParserService parser,
-        ILogger<CandidateService> logger)
+    public CandidateService(  AppDbContext context, IFileStorageService fileStorage, IPythonCvParserService parser, ILogger<CandidateService> logger)
     {
         _context = context;
         _fileStorage = fileStorage;
@@ -140,6 +136,7 @@ public class CandidateService : ICandidateService
                     Weaknesses = JsonSerializer.Serialize(parsed.Weaknesses),
                     AnalysisSummary = parsed.AnalysisSummary,
                     CreatedAt = DateTime.UtcNow,
+                    ParsedAt = DateTime.UtcNow,
                     CandidateId = candidate.Id
                 };
 
@@ -191,7 +188,8 @@ public class CandidateService : ICandidateService
             Strengths = JsonSerializer.Serialize(dto.Strengths),
             Weaknesses = JsonSerializer.Serialize(dto.Weaknesses),
             AnalysisSummary = dto.AnalysisSummary,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            ParsedAt = DateTime.UtcNow
         };
 
         _context.CandidateProfiles.Add(profile);
@@ -213,5 +211,94 @@ public class CandidateService : ICandidateService
         }
 
         return await _fileStorage.GetFileStreamAsync(profile.FileName);
+    }
+
+    public async Task<CandidateProfile> ReparseProfileAsync(int profileId)
+    {
+        _logger.LogInformation("Starting re-parse for profile {ProfileId}", profileId);
+        
+        var profile = await _context.CandidateProfiles
+            .Include(p => p.Candidate)
+            .Include(p => p.Job)
+            .FirstOrDefaultAsync(p => p.Id == profileId);
+        
+        if (profile == null)
+        {
+            _logger.LogWarning("Re-parse attempted for non-existent profile {ProfileId}", profileId);
+            throw new InvalidOperationException($"Profile {profileId} not found");
+        }
+
+        if (profile.Job == null)
+        {
+            _logger.LogWarning("Re-parse attempted for profile {ProfileId} with missing job", profileId);
+            throw new InvalidOperationException("Job information not found");
+        }
+
+        if (!_fileStorage.FileExists(profile.FileName))
+        {
+            _logger.LogWarning("Re-parse attempted for profile {ProfileId} but CV file not found", profileId);
+            throw new InvalidOperationException("Original CV file not found");
+        }
+
+        var fileStream = await _fileStorage.GetFileStreamAsync(profile.FileName);
+        if (fileStream == null)
+        {
+            throw new InvalidOperationException("Could not open CV file");
+        }
+
+        try
+        {
+            _logger.LogInformation("Re-parsing CV for profile {ProfileId}", profileId);
+            var startTime = DateTime.UtcNow;
+
+            using (fileStream)
+            {
+                var formFile = new FormFile(fileStream, 0, fileStream.Length, "file", profile.FileName)
+                {
+                    Headers = new HeaderDictionary(),
+                    ContentType = "application/pdf"
+                };
+
+                var parsed = await _parser.ParseCandidateFromFileAsync(
+                    formFile, 
+                    profile.JobId, 
+                    profile.Job.Title, 
+                    profile.Job.Description);
+
+                var duration = (DateTime.UtcNow - startTime).TotalSeconds;
+                _logger.LogInformation("Re-parse completed in {Duration}s for profile {ProfileId}", duration, profileId);
+
+                if (parsed != null)
+                {
+                    _logger.LogInformation("Re-parsed candidate: {Name}, Match: {MatchScore}%, Experience: {Years} years",
+                        parsed.Name, parsed.MatchScore, parsed.ExperienceYears);
+
+                    profile.Name = parsed.Name;
+                    profile.Email = parsed.Email;
+                    profile.Phone = parsed.Phone;
+                    profile.Location = parsed.Location;
+                    profile.ExperienceYears = parsed.ExperienceYears;
+                    profile.ProfileSummary = parsed.ProfileSummary;
+                    profile.MatchScore = parsed.MatchScore;
+                    profile.Skills = JsonSerializer.Serialize(parsed.Skills);
+                    profile.Strengths = JsonSerializer.Serialize(parsed.Strengths);
+                    profile.Weaknesses = JsonSerializer.Serialize(parsed.Weaknesses);
+                    profile.AnalysisSummary = parsed.AnalysisSummary;
+                    profile.ParsedAt = DateTime.UtcNow;
+
+                    _context.CandidateProfiles.Update(profile);
+                    await _context.SaveChangesAsync();
+
+                    _logger.LogInformation("Successfully re-parsed and updated profile {ProfileId}", profileId);
+                }
+            }
+
+            return profile;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to re-parse profile {ProfileId}", profileId);
+            throw;
+        }
     }
 }

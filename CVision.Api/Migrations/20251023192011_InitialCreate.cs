@@ -69,6 +69,7 @@ namespace CVision.Api.Migrations
                     Weaknesses = table.Column<string>(type: "jsonb", nullable: false),
                     AnalysisSummary = table.Column<string>(type: "text", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ParsedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CandidateId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>

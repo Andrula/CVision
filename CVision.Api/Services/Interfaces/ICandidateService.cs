@@ -8,4 +8,5 @@ public interface ICandidateService
     Task<CandidateProfile> SaveProfileAsync(CandidateProfileDTO dto);
     Task<Stream?> GetCandidateCvStreamAsync(int id);
     Task<IEnumerable<object>> GetCandidatesWithMatchScoreAsync(int jobId);
+    Task<CandidateProfile> ReparseProfileAsync(int profileId);  // ← Denne linje skal være der!
 }

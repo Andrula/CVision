@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CVision.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251010201633_InitialCreate")]
+    [Migration("20251023192011_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -94,6 +94,9 @@ namespace CVision.Api.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateTime>("ParsedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Phone")
                         .IsRequired()

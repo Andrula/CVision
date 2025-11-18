@@ -92,6 +92,9 @@ namespace CVision.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<DateTime>("ParsedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Phone")
                         .IsRequired()
                         .HasColumnType("text");

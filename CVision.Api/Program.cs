@@ -24,11 +24,14 @@ try
     builder.Services.AddScoped<IFileStorageService, FileStorageService>();
     builder.Services.AddScoped<ICandidateService, CandidateService>();
     builder.Services.AddScoped<IJobService, JobService>();
+    builder.Services.AddScoped<IPythonCvParserService, PythonCVParserService>();
 
     builder.Services.Configure<FileStorageSettings>(
         builder.Configuration.GetSection("FileStorage"));
+        
     builder.Services.Configure<CvParserSettings>(
         builder.Configuration.GetSection("CvParser"));
+
     builder.Services.Configure<CorsSettings>(
         builder.Configuration.GetSection("Cors"));
 

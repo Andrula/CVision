@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CVision.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3d8a5869fcde2b249b8266c6b1c43754498cc8f5")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5c69b7d231fece64a7bbc283ec678d5819c7793f")]
 [assembly: System.Reflection.AssemblyProductAttribute("CVision.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CVision.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
