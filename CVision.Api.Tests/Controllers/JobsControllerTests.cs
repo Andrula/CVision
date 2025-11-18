@@ -112,10 +112,10 @@ public class JobsControllerTests
     public async Task GetCandidatesForJob_ReturnsOkResultWithCandidates()
     {
         // Arrange
-        var candidates = new List<object>
+        var candidates = new List<CandidateWithMatchScoreDto>
         {
-            new { Id = 1, Name = "John Doe", MatchScore = 85 },
-            new { Id = 2, Name = "Jane Smith", MatchScore = 92 }
+            new CandidateWithMatchScoreDto { Id = 1, Name = "John Doe", MatchScore = 85, JobId = 1 },
+            new CandidateWithMatchScoreDto { Id = 2, Name = "Jane Smith", MatchScore = 92, JobId = 1 }
         };
 
         _mockCandidateService
@@ -137,7 +137,7 @@ public class JobsControllerTests
         // Arrange
         _mockCandidateService
             .Setup(s => s.GetCandidatesWithMatchScoreAsync(1))
-            .ReturnsAsync(new List<object>());
+            .ReturnsAsync(new List<CandidateWithMatchScoreDto>());
 
         // Act
         var result = await _controller.GetCandidatesForJob(1);
@@ -315,11 +315,11 @@ public class JobsControllerTests
     public async Task GetSkillDistribution_ReturnsOkResultWithSkills()
     {
         // Arrange
-        var skills = new List<object>
+        var skills = new List<SkillDistributionDto>
         {
-            new { Skill = "C#", Count = 5 },
-            new { Skill = "SQL", Count = 3 },
-            new { Skill = "React", Count = 2 }
+            new SkillDistributionDto { Skill = "C#", Count = 5 },
+            new SkillDistributionDto { Skill = "SQL", Count = 3 },
+            new SkillDistributionDto { Skill = "React", Count = 2 }
         };
 
         _mockJobService
@@ -341,7 +341,7 @@ public class JobsControllerTests
         // Arrange
         _mockJobService
             .Setup(s => s.GetSkillDistributionAsync(1))
-            .ReturnsAsync(new List<object>());
+            .ReturnsAsync(new List<SkillDistributionDto>());
 
         // Act
         var result = await _controller.GetSkillDistribution(1);
@@ -349,7 +349,7 @@ public class JobsControllerTests
         // Assert
         result.Should().BeOfType<OkObjectResult>();
         var okResult = result as OkObjectResult;
-        var skills = okResult!.Value as IEnumerable<object>;
+        var skills = okResult!.Value as IEnumerable<SkillDistributionDto>;
         skills.Should().BeEmpty();
     }
 
@@ -359,7 +359,7 @@ public class JobsControllerTests
         // Arrange
         _mockJobService
             .Setup(s => s.GetSkillDistributionAsync(42))
-            .ReturnsAsync(new List<object>());
+            .ReturnsAsync(new List<SkillDistributionDto>());
 
         // Act
         await _controller.GetSkillDistribution(42);
