@@ -1,10 +1,14 @@
+using System.Security.Claims;
+using CVision.Api.Data.DTO;
 using CVision.Api.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CVision.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class CandidatesController : ControllerBase
 {
     private readonly ICandidateService _candidateService;
@@ -12,6 +16,12 @@ public class CandidatesController : ControllerBase
     public CandidatesController(ICandidateService candidateService)
     {
         _candidateService = candidateService;
+    }
+
+    private string GetUserId()
+    {
+        return User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? throw new UnauthorizedAccessException("User not authenticated");
     }
 
     [HttpGet("/api/jobs/{jobId}/candidates")]

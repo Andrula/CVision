@@ -1,10 +1,14 @@
+using System.Security.Claims;
+using CVision.Api.Data.Models;
 using CVision.Api.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CVision.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class JobsController : ControllerBase
 {
     private readonly IJobService _jobService;
@@ -14,6 +18,22 @@ public class JobsController : ControllerBase
     {
         _jobService = jobService;
         _candidateService = candidateService;
+    }
+
+    private int GetCompanyId()
+    {
+        var companyIdClaim = User.FindFirst("CompanyId")?.Value;
+        if (string.IsNullOrEmpty(companyIdClaim) || !int.TryParse(companyIdClaim, out var companyId))
+        {
+            throw new UnauthorizedAccessException("Invalid company context");
+        }
+        return companyId;
+    }
+
+    private string GetUserId()
+    {
+        return User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? throw new UnauthorizedAccessException("User not authenticated");
     }
 
     [HttpGet]
@@ -45,12 +65,20 @@ public class JobsController : ControllerBase
     {
         try
         {
+            // Set company context and audit fields
+            job.CompanyId = GetCompanyId();
+            job.CreatedBy = GetUserId();
+
             var createdJob = await _jobService.CreateJobAsync(job);
             return CreatedAtAction(nameof(GetJob), new { id = createdJob.Id }, createdJob);
         }
         catch (ArgumentException ex)
         {
             return BadRequest(new { error = ex.Message });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { error = ex.Message });
         }
         catch (Exception ex)
         {
