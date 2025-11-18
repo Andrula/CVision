@@ -39,24 +39,27 @@ public class JobsController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetJobs()
     {
-        var jobs = await _jobService.GetAllJobsAsync();
+        var companyId = GetCompanyId();
+        var jobs = await _jobService.GetAllJobsAsync(companyId);
         return Ok(jobs);
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetJob(int id)
     {
-        var job = await _jobService.GetJobByIdAsync(id);
-        if (job == null) 
+        var companyId = GetCompanyId();
+        var job = await _jobService.GetJobByIdAsync(id, companyId);
+        if (job == null)
             return NotFound(new { error = "Job not found" });
-        
+
         return Ok(job);
     }
 
     [HttpGet("job/{jobId}")]
     public async Task<IActionResult> GetCandidatesForJob(int jobId)
     {
-        var candidates = await _candidateService.GetCandidatesWithMatchScoreAsync(jobId);
+        var companyId = GetCompanyId();
+        var candidates = await _candidateService.GetCandidatesWithMatchScoreAsync(jobId, companyId);
         return Ok(candidates);
     }
 
@@ -89,17 +92,19 @@ public class JobsController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteJob(int id)
     {
-        var deleted = await _jobService.DeleteJobAsync(id);
-        if (!deleted) 
+        var companyId = GetCompanyId();
+        var deleted = await _jobService.DeleteJobAsync(id, companyId);
+        if (!deleted)
             return NotFound(new { error = "Job not found" });
-        
+
         return NoContent();
     }
 
     [HttpGet("{jobId}/skills")]
     public async Task<IActionResult> GetSkillDistribution(int jobId)
     {
-        var skills = await _jobService.GetSkillDistributionAsync(jobId);
+        var companyId = GetCompanyId();
+        var skills = await _jobService.GetSkillDistributionAsync(jobId, companyId);
         return Ok(skills);
     }
 }

@@ -18,6 +18,16 @@ public class CandidatesController : ControllerBase
         _candidateService = candidateService;
     }
 
+    private int GetCompanyId()
+    {
+        var companyIdClaim = User.FindFirst("CompanyId")?.Value;
+        if (string.IsNullOrEmpty(companyIdClaim) || !int.TryParse(companyIdClaim, out var companyId))
+        {
+            throw new UnauthorizedAccessException("Invalid company context");
+        }
+        return companyId;
+    }
+
     private string GetUserId()
     {
         return User.FindFirst(ClaimTypes.NameIdentifier)?.Value
@@ -27,7 +37,8 @@ public class CandidatesController : ControllerBase
     [HttpGet("/api/jobs/{jobId}/candidates")]
     public async Task<IActionResult> GetCandidates(int jobId)
     {
-        var candidates = await _candidateService.GetCandidatesForJobAsync(jobId);
+        var companyId = GetCompanyId();
+        var candidates = await _candidateService.GetCandidatesForJobAsync(jobId, companyId);
         return Ok(candidates);
     }
 
@@ -36,7 +47,9 @@ public class CandidatesController : ControllerBase
     {
         try
         {
-            var candidate = await _candidateService.UploadCandidateAsync(jobId, file);
+            var companyId = GetCompanyId();
+            var userId = GetUserId();
+            var candidate = await _candidateService.UploadCandidateAsync(jobId, companyId, file, userId);
             return Ok(candidate);
         }
         catch (ArgumentException ex)
@@ -47,6 +60,10 @@ public class CandidatesController : ControllerBase
         {
             return NotFound(new { error = ex.Message });
         }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { error = ex.Message });
+        }
         catch (Exception ex)
         {
             return StatusCode(500, new { error = "Upload failed", details = ex.Message });
@@ -56,10 +73,11 @@ public class CandidatesController : ControllerBase
     [HttpGet("profile/{id}")]
     public async Task<IActionResult> GetProfile(int id)
     {
-        var profile = await _candidateService.GetProfileAsync(id);
-        if (profile == null) 
+        var companyId = GetCompanyId();
+        var profile = await _candidateService.GetProfileAsync(id, companyId);
+        if (profile == null)
             return NotFound(new { error = "Profile not found" });
-        
+
         return Ok(profile);
     }
 
@@ -68,8 +86,18 @@ public class CandidatesController : ControllerBase
     {
         try
         {
-            var profile = await _candidateService.SaveProfileAsync(dto);
+            var companyId = GetCompanyId();
+            var userId = GetUserId();
+            var profile = await _candidateService.SaveProfileAsync(dto, companyId, userId);
             return Ok(profile);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { error = ex.Message });
         }
         catch (Exception ex)
         {
@@ -80,8 +108,9 @@ public class CandidatesController : ControllerBase
     [HttpGet("/api/candidates/profile/{id}/cv")]
     public async Task<IActionResult> GetCandidateCV(int id)
     {
-        var stream = await _candidateService.GetCandidateCvStreamAsync(id);
-        if (stream == null) 
+        var companyId = GetCompanyId();
+        var stream = await _candidateService.GetCandidateCvStreamAsync(id, companyId);
+        if (stream == null)
             return NotFound(new { error = "CV file not found" });
 
         return File(stream, "application/pdf", enableRangeProcessing: true);
