@@ -383,8 +383,11 @@ public class FileStorageServiceTests : IDisposable
         // Act & Assert - Get Stream
         var stream = await _fileStorageService.GetFileStreamAsync(savedFileName);
         stream.Should().NotBeNull();
-        using var reader = new StreamReader(stream!);
-        var content = await reader.ReadToEndAsync();
+        string content;
+        using (var reader = new StreamReader(stream!))
+        {
+            content = await reader.ReadToEndAsync();
+        }
         content.Should().Be("Lifecycle content");
 
         // Act & Assert - Delete

@@ -52,7 +52,7 @@ public class JobServiceTests : IDisposable
 
         // Act
         var result = await _jobService.GetSkillDistributionAsync(job.Id);
-        var skillList = result.Cast<dynamic>().ToList();
+        var skillList = result.ToList();
 
         // Assert
         skillList.Should().NotBeEmpty();
@@ -60,17 +60,17 @@ public class JobServiceTests : IDisposable
 
         // C# should appear 3 times (most common)
         var csharpSkill = skillList.First();
-        ((string)csharpSkill.Skill).Should().Be("C#");
-        ((int)csharpSkill.Count).Should().Be(3);
+        csharpSkill.Skill.Should().Be("C#");
+        csharpSkill.Count.Should().Be(3);
 
         // SQL and JavaScript should appear 2 times each
         var sqlSkill = skillList.FirstOrDefault(s => s.Skill == "SQL");
         sqlSkill.Should().NotBeNull();
-        ((int)sqlSkill.Count).Should().Be(2);
+        sqlSkill!.Count.Should().Be(2);
 
         var jsSkill = skillList.FirstOrDefault(s => s.Skill == "JavaScript");
         jsSkill.Should().NotBeNull();
-        ((int)jsSkill.Count).Should().Be(2);
+        jsSkill!.Count.Should().Be(2);
     }
 
     [Fact]
@@ -94,12 +94,12 @@ public class JobServiceTests : IDisposable
 
         // Act
         var result = await _jobService.GetSkillDistributionAsync(job.Id);
-        var skillList = result.Cast<dynamic>().ToList();
+        var skillList = result.ToList();
 
         // Assert
         var csharpSkill = skillList.FirstOrDefault(s => s.Skill == "C#");
         csharpSkill.Should().NotBeNull();
-        ((int)csharpSkill.Count).Should().Be(2);
+        csharpSkill!.Count.Should().Be(2);
     }
 
     [Fact]
@@ -129,12 +129,13 @@ public class JobServiceTests : IDisposable
         _context.Candidates.Add(candidate);
         await _context.SaveChangesAsync();
 
+        // Test with empty JSON array instead of null since Skills is required
         var profile = new CandidateProfile
         {
             JobId = job.Id,
             CandidateId = candidate.Id,
             Name = "Test",
-            Skills = null!, // Explicitly null
+            Skills = "[]", // Empty JSON array
             Strengths = "[]",
             Weaknesses = "[]"
         };
@@ -194,16 +195,16 @@ public class JobServiceTests : IDisposable
 
         // Act
         var result = await _jobService.GetSkillDistributionAsync(job.Id);
-        var skillList = result.Cast<dynamic>().ToList();
+        var skillList = result.ToList();
 
         // Assert
         skillList.Should().HaveCount(3);
-        ((string)skillList[0].Skill).Should().Be("C#");
-        ((int)skillList[0].Count).Should().Be(3);
-        ((string)skillList[1].Skill).Should().Be("SQL");
-        ((int)skillList[1].Count).Should().Be(2);
-        ((string)skillList[2].Skill).Should().Be("Python");
-        ((int)skillList[2].Count).Should().Be(1);
+        skillList[0].Skill.Should().Be("C#");
+        skillList[0].Count.Should().Be(3);
+        skillList[1].Skill.Should().Be("SQL");
+        skillList[1].Count.Should().Be(2);
+        skillList[2].Skill.Should().Be("Python");
+        skillList[2].Count.Should().Be(1);
     }
 
     [Fact]
@@ -233,7 +234,7 @@ public class JobServiceTests : IDisposable
 
         // Act
         var result = await _jobService.GetSkillDistributionAsync(job.Id);
-        var skillList = result.Cast<dynamic>().ToList();
+        var skillList = result.ToList();
 
         // Assert
         skillList.Should().HaveCount(2); // Only "C#" and "SQL"

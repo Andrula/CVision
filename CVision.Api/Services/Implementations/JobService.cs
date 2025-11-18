@@ -59,7 +59,7 @@ public class JobService : IJobService
         return true;
     }
 
-    public async Task<IEnumerable<object>> GetSkillDistributionAsync(int jobId)
+    public async Task<IEnumerable<SkillDistributionDto>> GetSkillDistributionAsync(int jobId)
     {
         var profiles = await _context.CandidateProfiles
             .Where(p => p.JobId == jobId && p.Skills != null)
@@ -72,7 +72,7 @@ public class JobService : IJobService
 
         var grouped = allSkills
             .GroupBy(s => s)
-            .Select(g => new { Skill = g.Key, Count = g.Count() })
+            .Select(g => new SkillDistributionDto { Skill = g.Key, Count = g.Count() })
             .OrderByDescending(x => x.Count)
             .ToList();
 
