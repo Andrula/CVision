@@ -6,5 +6,5 @@ public interface IJobService
     Task<Job?> GetJobByIdAsync(int id);
     Task<Job> CreateJobAsync(Job job);
     Task<bool> DeleteJobAsync(int id);
-    Task<IEnumerable<object>> GetSkillDistributionAsync(int jobId);
+    Task<IEnumerable<SkillDistributionDto>> GetSkillDistributionAsync(int jobId);
 }

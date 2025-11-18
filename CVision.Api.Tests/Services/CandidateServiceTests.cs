@@ -273,11 +273,11 @@ public class CandidateServiceTests : IDisposable
 
         // Act
         var result = await _candidateService.GetCandidatesForJobAsync(job.Id);
-        var candidateList = result.Cast<dynamic>().ToList();
+        var candidateList = result.ToList();
 
         // Assert
         candidateList.Should().HaveCount(3);
-        candidateList.Should().AllSatisfy(c => ((int)c.JobId).Should().Be(job.Id));
+        candidateList.Should().AllSatisfy(c => c.JobId.Should().Be(job.Id));
     }
 
     [Fact]
@@ -288,15 +288,15 @@ public class CandidateServiceTests : IDisposable
 
         // Act
         var result = await _candidateService.GetCandidatesForJobAsync(job.Id);
-        var candidateList = result.Cast<dynamic>().ToList();
+        var candidateList = result.ToList();
 
         // Assert
         var firstCandidate = candidateList.First();
-        ((int)firstCandidate.Id).Should().BeGreaterThan(0);
-        ((int)firstCandidate.JobId).Should().Be(job.Id);
-        ((string)firstCandidate.Name).Should().NotBeNullOrEmpty();
-        ((int)firstCandidate.MatchScore).Should().BeInRange(0, 100);
-        ((int)firstCandidate.ExperienceYears).Should().BeGreaterThanOrEqualTo(0);
+        firstCandidate.Id.Should().BeGreaterThan(0);
+        firstCandidate.JobId.Should().Be(job.Id);
+        firstCandidate.Name.Should().NotBeNullOrEmpty();
+        firstCandidate.MatchScore.Should().BeInRange(0, 100);
+        firstCandidate.ExperienceYears.Should().BeGreaterThanOrEqualTo(0);
     }
 
     [Fact]
@@ -326,14 +326,14 @@ public class CandidateServiceTests : IDisposable
 
         // Act
         var result = await _candidateService.GetCandidatesWithMatchScoreAsync(job.Id);
-        var candidateList = result.Cast<dynamic>().ToList();
+        var candidateList = result.ToList();
 
         // Assert
         candidateList.Should().HaveCount(3);
         candidateList.Should().AllSatisfy(c =>
         {
-            ((int)c.Id).Should().BeGreaterThan(0);
-            ((int)c.MatchScore).Should().BeInRange(0, 100);
+            c.Id.Should().BeGreaterThan(0);
+            c.MatchScore.Should().BeInRange(0, 100);
         });
     }
 
@@ -352,12 +352,12 @@ public class CandidateServiceTests : IDisposable
 
         // Act
         var result = await _candidateService.GetCandidatesWithMatchScoreAsync(job.Id);
-        var candidateList = result.Cast<dynamic>().ToList();
+        var candidateList = result.ToList();
 
         // Assert
         candidateList.Should().HaveCount(1);
         var firstCandidate = candidateList.First();
-        ((int)firstCandidate.MatchScore).Should().Be(0);
+        firstCandidate.MatchScore.Should().Be(0);
     }
 
     #endregion

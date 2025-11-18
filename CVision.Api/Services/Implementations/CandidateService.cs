@@ -19,30 +19,30 @@ public class CandidateService : ICandidateService
         _logger = logger;
     }
 
-    public async Task<IEnumerable<object>> GetCandidatesForJobAsync(int jobId)
+    public async Task<IEnumerable<CandidateBasicDto>> GetCandidatesForJobAsync(int jobId)
     {
         return await _context.CandidateProfiles
             .Where(p => p.JobId == jobId)
-            .Select(p => new
+            .Select(p => new CandidateBasicDto
             {
-                p.Id,
-                p.JobId,
-                p.Name,
-                p.MatchScore,
-                p.ExperienceYears
+                Id = p.Id,
+                JobId = p.JobId,
+                Name = p.Name,
+                MatchScore = p.MatchScore,
+                ExperienceYears = p.ExperienceYears
             })
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<object>> GetCandidatesWithMatchScoreAsync(int jobId)
+    public async Task<IEnumerable<CandidateWithMatchScoreDto>> GetCandidatesWithMatchScoreAsync(int jobId)
     {
         return await _context.Candidates
             .Where(c => c.JobId == jobId)
-            .Select(c => new
+            .Select(c => new CandidateWithMatchScoreDto
             {
-                c.Id,
-                c.JobId,
-                c.Name,
+                Id = c.Id,
+                JobId = c.JobId,
+                Name = c.Name,
                 MatchScore = _context.CandidateProfiles
                     .Where(p => p.CandidateId == c.Id)
                     .Select(p => p.MatchScore)
