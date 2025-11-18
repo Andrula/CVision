@@ -25,10 +25,10 @@ public class CandidatesControllerTests
     public async Task GetCandidates_ReturnsOkResult()
     {
         // Arrange
-        var candidates = new List<object>
+        var candidates = new List<CandidateBasicDto>
         {
-            new { Id = 1, Name = "John Doe", MatchScore = 85 },
-            new { Id = 2, Name = "Jane Smith", MatchScore = 92 }
+            new CandidateBasicDto { Id = 1, Name = "John Doe", MatchScore = 85, JobId = 1, ExperienceYears = 5 },
+            new CandidateBasicDto { Id = 2, Name = "Jane Smith", MatchScore = 92, JobId = 1, ExperienceYears = 3 }
         };
 
         _mockCandidateService
@@ -50,7 +50,7 @@ public class CandidatesControllerTests
         // Arrange
         _mockCandidateService
             .Setup(s => s.GetCandidatesForJobAsync(It.IsAny<int>()))
-            .ReturnsAsync(new List<object>());
+            .ReturnsAsync(new List<CandidateBasicDto>());
 
         // Act
         await _controller.GetCandidates(42);

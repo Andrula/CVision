@@ -1,5 +1,6 @@
 global using Xunit;
 global using Moq;
+global using CVision.Api.Data.DTO;
 global using CVision.Api.Services.Implementations;
 global using CVision.Api.Services.Interfaces;
 global using CVision.Api.Controllers;
