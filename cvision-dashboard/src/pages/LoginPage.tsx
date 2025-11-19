@@ -19,9 +19,17 @@ export default function LoginPage() {
 
     try {
       const response = await login({ email, password });
+      console.log("Login response:", response);
+
+      if (!response.user || !response.token) {
+        setError("Invalid response from server. Please try again.");
+        return;
+      }
+
       authLogin(response.user, response.token);
       navigate("/dashboard");
     } catch (err) {
+      console.error("Login error:", err);
       setError(err instanceof Error ? err.message : "Login failed. Please try again.");
     } finally {
       setIsLoading(false);
