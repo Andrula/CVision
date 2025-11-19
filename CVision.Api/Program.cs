@@ -99,8 +99,12 @@ try
 
     // JWT Authentication
     var jwtSettings = builder.Configuration.GetSection("Jwt");
-    var secretKey = jwtSettings["SecretKey"]
-        ?? throw new InvalidOperationException("JWT SecretKey is not configured");
+    var secretKey = jwtSettings["Secret"]
+        ?? throw new InvalidOperationException("JWT Secret is not configured");
+
+    // Configure JwtSettings for dependency injection
+    builder.Services.Configure<CVision.Api.Configuration.JwtSettings>(
+        builder.Configuration.GetSection("Jwt"));
 
     builder.Services.AddAuthentication(options =>
     {
