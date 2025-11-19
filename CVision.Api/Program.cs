@@ -64,6 +64,19 @@ try
     builder.Services.AddDbContext<AppDbContext>(options =>
         options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+    // Configure ASP.NET Core Identity
+    builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+    {
+        options.Password.RequireDigit = true;
+        options.Password.RequireLowercase = true;
+        options.Password.RequireUppercase = true;
+        options.Password.RequireNonAlphanumeric = true;
+        options.Password.RequiredLength = 8;
+        options.User.RequireUniqueEmail = true;
+    })
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();
+
     // Configure Hangfire
     builder.Services.AddHangfire(config => config
         .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
@@ -86,8 +99,12 @@ try
 
     // JWT Authentication
     var jwtSettings = builder.Configuration.GetSection("Jwt");
-    var secretKey = jwtSettings["SecretKey"]
-        ?? throw new InvalidOperationException("JWT SecretKey is not configured");
+    var secretKey = jwtSettings["Secret"]
+        ?? throw new InvalidOperationException("JWT Secret is not configured");
+
+    // Configure JwtSettings for dependency injection
+    builder.Services.Configure<CVision.Api.Configuration.JwtSettings>(
+        builder.Configuration.GetSection("Jwt"));
 
     builder.Services.AddAuthentication(options =>
     {

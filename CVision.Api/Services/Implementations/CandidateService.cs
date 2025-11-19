@@ -1,3 +1,4 @@
+using CVision.Api.Data.Models;
 using CVision.Api.Utils;
 using Hangfire;
 
@@ -110,10 +111,6 @@ public class CandidateService : ICandidateService
             {
                 Directory.CreateDirectory(uploadsDir);
             }
-            else
-            {
-                _logger.LogWarning("Parser returned null for candidate {CandidateId}", candidate.Id);
-            }
 
             var filePath = Path.Combine(uploadsDir, file.FileName);
             using (var fileStream = new FileStream(filePath, FileMode.Create))
@@ -136,11 +133,11 @@ public class CandidateService : ICandidateService
             await _context.SaveChangesAsync();
 
             // Queue background job for processing
-            var jobId = _backgroundJobs.Enqueue<ICvProcessingJob>(
+            var hangfireJobId = _backgroundJobs.Enqueue<ICvProcessingJob>(
                 job => job.ProcessCandidateAsync(candidate.Id));
 
-            _logger.LogInformation("Queued candidate {CandidateId} for processing with job ID {JobId}",
-                candidate.Id, jobId);
+            _logger.LogInformation("Queued candidate {CandidateId} for processing with Hangfire job ID {HangfireJobId}",
+                candidate.Id, hangfireJobId);
 
             return candidate;
         }
