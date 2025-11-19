@@ -99,16 +99,12 @@ try
 
     builder.Services.AddAuthorization();
 
-    // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-    builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
-    builder.Services.AddControllers();
-
-    // HTTP client for parser
-    builder.Services.AddHttpClient<IPythonCvParserService, PythonCVParserService>(client =>
-    {
-        client.Timeout = TimeSpan.FromMinutes(5);
-    });
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
     // CORS
     builder.Services.AddCors(options =>
@@ -122,49 +118,6 @@ try
             });
     });
 
-    var app = builder.Build();
+app.MapControllers();
 
-    // Seed roles on startup
-    using (var scope = app.Services.CreateScope())
-    {
-        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-        var roles = new[] { "CompanyAdmin", "Recruiter", "Viewer" };
-
-        foreach (var role in roles)
-        {
-            if (!await roleManager.RoleExistsAsync(role))
-            {
-                await roleManager.CreateAsync(new IdentityRole(role));
-            }
-        }
-    }
-
-    // Configure the HTTP request pipeline
-    if (app.Environment.IsDevelopment())
-    {
-        app.UseSwagger();
-        app.UseSwaggerUI();
-    }
-
-    app.UseCors(AllowFrontendCommunication);
-    app.UseHttpsRedirection();
-    
-    // Authentication & Authorization must be between UseRouting and UseEndpoints
-    app.UseAuthentication();
-    app.UseAuthorization();
-    
-    app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
-    
-    app.MapControllers();
-
-    Log.Information("CVision API started successfully");
-    app.Run();
-}
-catch (Exception ex)
-{
-    Log.Fatal(ex, "Application terminated unexpectedly");
-}
-finally
-{
-    Log.CloseAndFlush();
-}
+app.Run();
