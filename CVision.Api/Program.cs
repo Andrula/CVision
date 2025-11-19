@@ -1,5 +1,8 @@
 using System.Text;
 using CVision.Api.Configuration;
+using CVision.Api.Services;
+using Hangfire;
+using Hangfire.PostgreSql;
 using CVision.Api.Data;
 using CVision.Api.Data.Models;
 using CVision.Api.Services.Implementations;
@@ -27,7 +30,7 @@ Log.Logger = new LoggerConfiguration()
 try
 {
     Log.Information("Starting CVision API...");
-
+  
     var builder = WebApplication.CreateBuilder(args);
 
     builder.Host.UseSerilog();
@@ -40,61 +43,33 @@ try
     builder.Services.AddScoped<IJobService, JobService>();
     builder.Services.AddScoped<IAuthService, AuthService>();
     builder.Services.AddScoped<IPythonCvParserService, PythonCVParserService>();
+    builder.Services.AddScoped<ICandidateService, CandidateService>();
+    builder.Services.AddScoped<ICvProcessingJob, CvProcessingJob>();
 
-    builder.Services.Configure<FileStorageSettings>(
-        builder.Configuration.GetSection("FileStorage"));
-    builder.Services.Configure<CvParserSettings>(
-        builder.Configuration.GetSection("CvParser"));
-    builder.Services.Configure<CorsSettings>(
-        builder.Configuration.GetSection("Cors"));
-    builder.Services.Configure<JwtSettings>(
-        builder.Configuration.GetSection("JwtSettings"));
+// Configure Hangfire
+builder.Services.AddHangfire(config => config
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UsePostgreSqlStorage(options =>
+        options.UseNpgsqlConnection(builder.Configuration.GetConnectionString("DefaultConnection"))));
 
-    // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-    builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
-    builder.Services.AddControllers();
-    builder.Services.AddHttpClient<IPythonCvParserService, PythonCVParserService>(client =>
-    {
-        client.Timeout = TimeSpan.FromMinutes(5);
-    });
+builder.Services.AddHangfireServer(options =>
+{
+    options.WorkerCount = 2; // Number of concurrent workers
+});
 
-    // Database Context
-    builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+// Configure automatic retry for failed jobs
+GlobalJobFilters.Filters.Add(new AutomaticRetryAttribute
+{
+    Attempts = 3, // Retry up to 3 times
+    DelaysInSeconds = new[] { 60, 300, 900 } // Wait 1min, 5min, 15min between retries
+});
 
-    // Identity Configuration
-    builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
-    {
-        // Password settings
-        options.Password.RequireDigit = true;
-        options.Password.RequireLowercase = true;
-        options.Password.RequireUppercase = true;
-        options.Password.RequireNonAlphanomeric = false;
-        options.Password.RequiredLength = 6;
-
-        // User settings
-        options.User.RequireUniqueEmail = true;
-
-        // Lockout settings
-        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
-        options.Lockout.MaxFailedAccessAttempts = 5;
-    })
-    .AddEntityFrameworkStores<AppDbContext>()
-    .AddDefaultTokenProviders();
-
-    // JWT Authentication
-    var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-    var secretKey = jwtSettings["Secret"] ?? throw new InvalidOperationException("JWT Secret not configured");
-
-    builder.Services.AddAuthentication(options =>
-    {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: AllowFrontendCommunication,
+        policy =>
         {
             ValidateIssuer = true,
             ValidateAudience = true,
@@ -136,13 +111,10 @@ try
 
     app.MapControllers();
 
-    app.Run();
-}
-catch (Exception ex)
+// Add Hangfire Dashboard (accessible at /hangfire)
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
 {
-    Log.Fatal(ex, "Application terminated unexpectedly");
-}
-finally
-{
-    Log.CloseAndFlush();
-}
+    Authorization = new[] { new HangfireAuthorizationFilter() }
+});
+
+app.Run();

@@ -18,6 +18,10 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     {
         base.OnModelCreating(modelBuilder);
 
+        // Add index for efficient caching lookup
+        modelBuilder.Entity<Candidate>()
+            .HasIndex(c => new { c.FileHash, c.JobId })
+            .HasDatabaseName("IX_Candidates_FileHash_JobId");
         // Company -> License (1:1)
         modelBuilder.Entity<Company>()
             .HasOne(c => c.License)

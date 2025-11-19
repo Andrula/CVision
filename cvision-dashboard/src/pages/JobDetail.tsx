@@ -19,6 +19,43 @@ const JobDetail = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [skills, setSkills] = useState<{ skill: string; count: number }[]>([]);
   const navigate = useNavigate();
+  const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null);
+
+  const fetchCandidates = async () => {
+    try {
+      const candRes = await fetch(`http://localhost:5000/api/jobs/${id}/candidates`);
+      const candData = await candRes.json();
+      setCandidates(candData);
+
+      // Check if there are any candidates still processing
+      const hasProcessing = candData.some((c: any) => c.status === 0 || c.status === 1); // Pending or Processing
+
+      if (hasProcessing && !pollingInterval) {
+        // Start polling
+        const interval = setInterval(async () => {
+          const res = await fetch(`http://localhost:5000/api/jobs/${id}/candidates`);
+          const data = await res.json();
+          setCandidates(data);
+
+          // Stop polling if no more processing candidates
+          const stillProcessing = data.some((c: any) => c.status === 0 || c.status === 1);
+          if (!stillProcessing) {
+            clearInterval(interval);
+            setPollingInterval(null);
+
+            // Refresh skills when all done
+            fetchSkillDistribution(Number(id))
+              .then(setSkills)
+              .catch((err) => console.error("Failed to refresh skills", err));
+          }
+        }, 3000); // Poll every 3 seconds
+
+        setPollingInterval(interval);
+      }
+    } catch (err) {
+      console.error("Failed to fetch candidates", err);
+    }
+  };
 
   useEffect(() => {
     const fetchJobAndCandidates = async () => {
@@ -27,14 +64,11 @@ const JobDetail = () => {
         const jobData = await jobRes.json();
         setJob(jobData);
 
-        const candRes = await fetch(`http://localhost:5000/api/jobs/${id}/candidates`);
-        const candData = await candRes.json();
+        await fetchCandidates();
 
         fetchSkillDistribution(Number(id))
           .then(setSkills)
           .catch((err) => console.error("Failed to fetch skills", err));
-
-        setCandidates(candData);
       } catch (err) {
         console.error("Failed to fetch job or candidates", err);
       } finally {
@@ -43,6 +77,13 @@ const JobDetail = () => {
     };
 
     fetchJobAndCandidates();
+
+    // Cleanup polling on unmount
+    return () => {
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+      }
+    };
   }, [id]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -65,9 +106,10 @@ const JobDetail = () => {
     console.log("Upload started");
     if (!selectedFiles.length) return;
 
-    setUploadStarted(true); // 👈 FIX
+    setUploadStarted(true);
     setUploadingIndex(0);
 
+    // Upload all files to queue (fast, non-blocking)
     for (let i = 0; i < selectedFiles.length; i++) {
       const file = selectedFiles[i];
       const formData = new FormData();
@@ -94,17 +136,8 @@ const JobDetail = () => {
     setUploadStarted(false);
     setSelectedFiles([]);
 
-    try {
-      const candRes = await fetch(`http://localhost:5000/api/jobs/${id}/candidates`);
-      const candData = await candRes.json();
-      setCandidates(candData);
-    } catch (err) {
-      console.error("Failed to refresh candidates", err);
-    }
-
-    fetchSkillDistribution(Number(id))
-      .then(setSkills)
-      .catch((err) => console.error("Failed to refresh skills", err));
+    // Refresh candidates and start polling for status updates
+    await fetchCandidates();
   };
 
   if (loading) return <p className="p-6">Loading...</p>;
