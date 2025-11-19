@@ -15,12 +15,18 @@ public class CandidateService : ICandidateService
         _logger = logger;
     }
 
-    public async Task<IEnumerable<object>> GetCandidatesForJobAsync(int jobId)
+    public async Task<IEnumerable<object>> GetCandidatesForJobAsync(int jobId, int companyId)
     {
+<<<<<<< HEAD
         _logger.LogDebug("Fetching candidates for job {JobId}", jobId);
         
         var candidates = await _context.CandidateProfiles
             .Where(p => p.JobId == jobId)
+=======
+        return await _context.CandidateProfiles
+            .Include(p => p.Job)
+            .Where(p => p.JobId == jobId && p.Job!.CompanyId == companyId)
+>>>>>>> origin/feature/identity-authentication
             .Select(p => new
             {
                 p.Id,
@@ -36,12 +42,18 @@ public class CandidateService : ICandidateService
         return candidates;
     }
 
-    public async Task<IEnumerable<object>> GetCandidatesWithMatchScoreAsync(int jobId)
+    public async Task<IEnumerable<object>> GetCandidatesWithMatchScoreAsync(int jobId, int companyId)
     {
+<<<<<<< HEAD
         _logger.LogDebug("Fetching candidates with match scores for job {JobId}", jobId);
         
         var candidates = await _context.Candidates
             .Where(c => c.JobId == jobId)
+=======
+        return await _context.Candidates
+            .Include(c => c.Job)
+            .Where(c => c.JobId == jobId && c.Job!.CompanyId == companyId)
+>>>>>>> origin/feature/identity-authentication
             .Select(c => new
             {
                 c.Id,
@@ -59,8 +71,9 @@ public class CandidateService : ICandidateService
         return candidates;
     }
 
-    public async Task<CandidateProfile?> GetProfileAsync(int id)
+    public async Task<CandidateProfile?> GetProfileAsync(int id, int companyId)
     {
+<<<<<<< HEAD
         _logger.LogDebug("Fetching profile {ProfileId}", id);
         
         var profile = await _context.CandidateProfiles.FindAsync(id);
@@ -69,9 +82,14 @@ public class CandidateService : ICandidateService
             _logger.LogWarning("Profile {ProfileId} not found", id);
         
         return profile;
+=======
+        return await _context.CandidateProfiles
+            .Include(p => p.Job)
+            .FirstOrDefaultAsync(p => p.Id == id && p.Job!.CompanyId == companyId);
+>>>>>>> origin/feature/identity-authentication
     }
 
-    public async Task<Candidate> UploadCandidateAsync(int jobId, IFormFile file)
+    public async Task<Candidate> UploadCandidateAsync(int jobId, int companyId, IFormFile file, string userId)
     {
         _logger.LogInformation("Starting CV upload for job {JobId}, file: {FileName}, size: {FileSize}KB", 
             jobId, file.FileName, file.Length / 1024);
@@ -82,6 +100,7 @@ public class CandidateService : ICandidateService
             throw new ArgumentException("No file uploaded.");
         }
 
+<<<<<<< HEAD
         var job = await _context.Jobs.FindAsync(jobId);
 
         if (job == null)
@@ -89,12 +108,19 @@ public class CandidateService : ICandidateService
             _logger.LogWarning("Upload attempted for non-existent job {JobId}", jobId);
             throw new InvalidOperationException($"Job with ID {jobId} not found.");
         }
+=======
+        var job = await _context.Jobs
+            .FirstOrDefaultAsync(j => j.Id == jobId && j.CompanyId == companyId);
+        if (job == null)
+            throw new InvalidOperationException($"Job with ID {jobId} not found or access denied.");
+>>>>>>> origin/feature/identity-authentication
 
         var candidate = new Candidate
         {
             JobId = jobId,
             FileName = file.FileName,
             UploadedAt = DateTime.UtcNow,
+            UploadedBy = userId,
             Name = "Parsing..."
         };
 
@@ -136,7 +162,11 @@ public class CandidateService : ICandidateService
                     Weaknesses = JsonSerializer.Serialize(parsed.Weaknesses),
                     AnalysisSummary = parsed.AnalysisSummary,
                     CreatedAt = DateTime.UtcNow,
+<<<<<<< HEAD
                     ParsedAt = DateTime.UtcNow,
+=======
+                    CreatedBy = userId,
+>>>>>>> origin/feature/identity-authentication
                     CandidateId = candidate.Id
                 };
 
@@ -170,10 +200,19 @@ public class CandidateService : ICandidateService
         }
     }
 
-    public async Task<CandidateProfile> SaveProfileAsync(CandidateProfileDTO dto)
+    public async Task<CandidateProfile> SaveProfileAsync(CandidateProfileDTO dto, int companyId, string userId)
     {
+<<<<<<< HEAD
         _logger.LogInformation("Saving candidate profile for job {JobId}: {Name}", dto.JobId, dto.Name);
         
+=======
+        // Verify job belongs to company
+        var job = await _context.Jobs
+            .FirstOrDefaultAsync(j => j.Id == dto.JobId && j.CompanyId == companyId);
+        if (job == null)
+            throw new InvalidOperationException($"Job with ID {dto.JobId} not found or access denied.");
+
+>>>>>>> origin/feature/identity-authentication
         var profile = new CandidateProfile
         {
             JobId = dto.JobId,
@@ -189,7 +228,11 @@ public class CandidateService : ICandidateService
             Weaknesses = JsonSerializer.Serialize(dto.Weaknesses),
             AnalysisSummary = dto.AnalysisSummary,
             CreatedAt = DateTime.UtcNow,
+<<<<<<< HEAD
             ParsedAt = DateTime.UtcNow
+=======
+            CreatedBy = userId
+>>>>>>> origin/feature/identity-authentication
         };
 
         _context.CandidateProfiles.Add(profile);
@@ -199,11 +242,17 @@ public class CandidateService : ICandidateService
         return profile;
     }
 
-    public async Task<Stream?> GetCandidateCvStreamAsync(int id)
+    public async Task<Stream?> GetCandidateCvStreamAsync(int id, int companyId)
     {
+<<<<<<< HEAD
         _logger.LogInformation("Retrieving CV file for profile {ProfileId}", id);
         
         var profile = await _context.CandidateProfiles.FindAsync(id);
+=======
+        var profile = await _context.CandidateProfiles
+            .Include(p => p.Job)
+            .FirstOrDefaultAsync(p => p.Id == id && p.Job!.CompanyId == companyId);
+>>>>>>> origin/feature/identity-authentication
         if (profile == null || string.IsNullOrEmpty(profile.FileName))
         {
             _logger.LogWarning("CV file not found for profile {ProfileId}", id);
