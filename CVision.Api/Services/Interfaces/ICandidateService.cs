@@ -8,4 +8,6 @@ public interface ICandidateService
     Task<CandidateProfile> SaveProfileAsync(CandidateProfileDTO dto, int companyId, string userId);
     Task<Stream?> GetCandidateCvStreamAsync(int id, int companyId);
     Task<IEnumerable<object>> GetCandidatesWithMatchScoreAsync(int jobId, int companyId);
+    Task<CandidateProfile> ReparseProfileAsync(int profileId);  
+
 }

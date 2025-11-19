@@ -11,6 +11,7 @@ public class CandidateProfile
     public string Phone { get; set; } = string.Empty;
     public string Location { get; set; } = string.Empty;
     public string FileName { get; set; } = string.Empty;
+    public string? FileHash { get; set; }
     public int ExperienceYears { get; set; }
 
     public string ProfileSummary { get; set; } = string.Empty;
@@ -28,6 +29,9 @@ public class CandidateProfile
     public string AnalysisSummary { get; set; } = string.Empty;
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    public DateTime ParsedAt { get; set; }
+
     public DateTime? UpdatedAt { get; set; }
 
     // Audit fields

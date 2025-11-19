@@ -8,126 +8,163 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
+using Serilog.Events;
 
-var builder = WebApplication.CreateBuilder(args);
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+    .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Information)
+    .Enrich.FromLogContext()
+    .WriteTo.Console(
+        outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
+    .WriteTo.File(
+        path: "logs/cvision-.log",
+        rollingInterval: RollingInterval.Day,
+        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
+    .CreateLogger();
 
-var AllowFrontendCommunication = "_AllowFrontendCommunication";
-
-// Add services to the container.
-builder.Services.AddScoped<IFileStorageService, FileStorageService>();
-builder.Services.AddScoped<ICandidateService, CandidateService>();
-builder.Services.AddScoped<IJobService, JobService>();
-builder.Services.AddScoped<IAuthService, AuthService>();
-
-builder.Services.Configure<FileStorageSettings>(
-    builder.Configuration.GetSection("FileStorage"));
-builder.Services.Configure<CvParserSettings>(
-    builder.Configuration.GetSection("CvParser"));
-builder.Services.Configure<CorsSettings>(
-    builder.Configuration.GetSection("Cors"));
-builder.Services.Configure<JwtSettings>(
-    builder.Configuration.GetSection("JwtSettings"));
-
-// Database Context
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-// Identity Configuration
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+try
 {
-    // Password settings
-    options.Password.RequireDigit = true;
-    options.Password.RequireLowercase = true;
-    options.Password.RequireUppercase = true;
-    options.Password.RequireNonAlphanumeric = false;
-    options.Password.RequiredLength = 6;
+    Log.Information("Starting CVision API...");
+    
+    var builder = WebApplication.CreateBuilder(args);
 
-    // User settings
-    options.User.RequireUniqueEmail = true;
+    builder.Host.UseSerilog();
 
-    // Lockout settings
-    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
-    options.Lockout.MaxFailedAccessAttempts = 5;
-})
-.AddEntityFrameworkStores<AppDbContext>()
-.AddDefaultTokenProviders();
+    var AllowFrontendCommunication = "_AllowFrontendCommunication";
 
-// JWT Authentication
-var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var secretKey = jwtSettings["Secret"] ?? throw new InvalidOperationException("JWT Secret not configured");
+    // Add services to the container.
+    builder.Services.AddScoped<IFileStorageService, FileStorageService>();
+    builder.Services.AddScoped<ICandidateService, CandidateService>();
+    builder.Services.AddScoped<IJobService, JobService>();
+    builder.Services.AddScoped<IAuthService, AuthService>();
+    builder.Services.AddScoped<IPythonCvParserService, PythonCVParserService>();
 
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
+    builder.Services.Configure<FileStorageSettings>(
+        builder.Configuration.GetSection("FileStorage"));
+    builder.Services.Configure<CvParserSettings>(
+        builder.Configuration.GetSection("CvParser"));
+    builder.Services.Configure<CorsSettings>(
+        builder.Configuration.GetSection("Cors"));
+    builder.Services.Configure<JwtSettings>(
+        builder.Configuration.GetSection("JwtSettings"));
+
+    // Database Context
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+    // Identity Configuration
+    builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtSettings["Issuer"],
-        ValidAudience = jwtSettings["Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
-    };
-});
+        // Password settings
+        options.Password.RequireDigit = true;
+        options.Password.RequireLowercase = true;
+        options.Password.RequireUppercase = true;
+        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequiredLength = 6;
 
-builder.Services.AddAuthorization();
+        // User settings
+        options.User.RequireUniqueEmail = true;
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services.AddControllers();
-builder.Services.AddHttpClient<IPythonCvParserService, PythonCVParserService>(client =>
-{
-    client.Timeout = TimeSpan.FromMinutes(5);
-});
+        // Lockout settings
+        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+        options.Lockout.MaxFailedAccessAttempts = 5;
+    })
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();
 
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy(name: AllowFrontendCommunication,
-        policy =>
-        {
-            policy.WithOrigins("http://localhost:5173")
-                  .AllowAnyHeader()
-                  .AllowAnyMethod();
-        });
-});
+    // JWT Authentication
+    var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+    var secretKey = jwtSettings["Secret"] ?? throw new InvalidOperationException("JWT Secret not configured");
 
-var app = builder.Build();
-
-// Seed roles on startup
-using (var scope = app.Services.CreateScope())
-{
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    var roles = new[] { "CompanyAdmin", "Recruiter", "Viewer" };
-
-    foreach (var role in roles)
+    builder.Services.AddAuthentication(options =>
     {
-        if (!await roleManager.RoleExistsAsync(role))
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
         {
-            await roleManager.CreateAsync(new IdentityRole(role));
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtSettings["Issuer"],
+            ValidAudience = jwtSettings["Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
+        };
+    });
+
+    builder.Services.AddAuthorization();
+
+    // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen();
+    builder.Services.AddControllers();
+
+    // HTTP client for parser
+    builder.Services.AddHttpClient<IPythonCvParserService, PythonCVParserService>(client =>
+    {
+        client.Timeout = TimeSpan.FromMinutes(5);
+    });
+
+    // CORS
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy(name: AllowFrontendCommunication,
+            policy =>
+            {
+                policy.WithOrigins("http://localhost:5173")
+                      .AllowAnyHeader()
+                      .AllowAnyMethod();
+            });
+    });
+
+    var app = builder.Build();
+
+    // Seed roles on startup
+    using (var scope = app.Services.CreateScope())
+    {
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        var roles = new[] { "CompanyAdmin", "Recruiter", "Viewer" };
+
+        foreach (var role in roles)
+        {
+            if (!await roleManager.RoleExistsAsync(role))
+            {
+                await roleManager.CreateAsync(new IdentityRole(role));
+            }
         }
     }
-}
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+    // Configure the HTTP request pipeline
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
+
+    app.UseCors(AllowFrontendCommunication);
+    app.UseHttpsRedirection();
+    
+    // Authentication & Authorization must be between UseRouting and UseEndpoints
+    app.UseAuthentication();
+    app.UseAuthorization();
+    
+    app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
+    
+    app.MapControllers();
+
+    Log.Information("CVision API started successfully");
+    app.Run();
+}
+catch (Exception ex)
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    Log.Fatal(ex, "Application terminated unexpectedly");
 }
-
-app.UseCors(AllowFrontendCommunication);
-app.UseHttpsRedirection();
-
-// Authentication & Authorization must be between UseRouting and UseEndpoints
-app.UseAuthentication();
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.Run();
+finally
+{
+    Log.CloseAndFlush();
+}
