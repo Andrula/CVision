@@ -101,7 +101,7 @@ async def parse_cv(cv_file: UploadFile = File(...), job_file: UploadFile = File(
 
 
         response = client.responses.create(
-            model="gpt-4-turbo",
+            model="gpt-4o-mini",
             temperature=0,
             input=[
                 {
