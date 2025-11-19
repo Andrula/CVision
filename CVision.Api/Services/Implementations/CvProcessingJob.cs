@@ -125,7 +125,8 @@ public class CvProcessingJob : ICvProcessingJob
                 formFile,
                 candidate.JobId,
                 candidate.Job.Title,
-                candidate.Job.Description);
+                candidate.Job.Description,
+                candidate.Language);
 
             if (parsed != null)
             {

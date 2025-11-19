@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import Header from "../components/Header";
 
 type CandidateProfile = {
@@ -19,6 +20,7 @@ type CandidateProfile = {
 };
 
 const CandidateDetail = () => {
+  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
   const [candidate, setCandidate] = useState<CandidateProfile | null>(null);
@@ -47,8 +49,8 @@ const CandidateDetail = () => {
     fetchCandidate();
   }, [id]);
 
-  if (loading) return <p className="p-6">Henter data...</p>;
-  if (!candidate) return <p className="p-6">Kandidat ikke fundet.</p>;
+  if (loading) return <p className="p-6">{t('common.loading')}</p>;
+  if (!candidate) return <p className="p-6">{t('candidates.candidateNotFound')}</p>;
 
   return (
     <>
@@ -67,27 +69,27 @@ const CandidateDetail = () => {
                     onClick={() => navigate(`/jobs/${candidate.jobId}`)}
                     className="text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1"
                   >
-                    ← Tilbage
+                    ← {t('common.back')}
                   </button>
                   <h1 className="text-lg font-bold text-blue-700 dark:text-blue-400">{candidate.name}</h1>
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <button className="text-xs bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 transition">
-                    Inviter til samtale
+                    {t('candidates.inviteToInterview')}
                   </button>
                   <button className="text-xs bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 transition">
-                    Afvis kandidat
+                    {t('candidates.rejectCandidate')}
                   </button>
                   <button className="text-xs bg-red-100 dark:bg-red-700 text-red-800 dark:text-red-200 px-3 py-1 rounded-full hover:bg-red-200 dark:hover:bg-red-600 transition">
-                    Slet
+                    {t('common.delete')}
                   </button>
                 </div>
               </div>
 
-              <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Beskrivelse</h2>
+              <h2 className="text-xl font-semibold text-gray-800 dark:text-white">{t('common.description')}</h2>
               <p className="text-gray-700 dark:text-gray-300">{candidate.profileSummary}</p>
 
-              <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Færdigheder</h2>
+              <h2 className="text-xl font-semibold text-gray-800 dark:text-white">{t('candidates.skills')}</h2>
               <ul className="flex flex-wrap gap-2 text-gray-800 dark:text-gray-200">
                 {candidate.skills.map((skill, i) => (
                   <li key={i} className="bg-gray-200 dark:bg-gray-700 px-3 py-1 rounded-full text-sm">
@@ -96,22 +98,22 @@ const CandidateDetail = () => {
                 ))}
               </ul>
 
-              <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Styrker</h2>
+              <h2 className="text-xl font-semibold text-gray-800 dark:text-white">{t('candidates.strengths')}</h2>
               <ul className="list-disc list-inside text-gray-700 dark:text-gray-300">
                 {candidate.strengths.map((s, i) => <li key={i}>{s}</li>)}
               </ul>
 
-              <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Svagheder</h2>
+              <h2 className="text-xl font-semibold text-gray-800 dark:text-white">{t('candidates.weaknesses')}</h2>
               <ul className="list-disc list-inside text-gray-700 dark:text-gray-300">
                 {candidate.weaknesses.map((w, i) => <li key={i}>{w}</li>)}
               </ul>
 
-              <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Analyse</h2>
+              <h2 className="text-xl font-semibold text-gray-800 dark:text-white">{t('candidates.analysis')}</h2>
               <p className="text-gray-700 dark:text-gray-300">{candidate.analysisSummary}</p>
 
               <div className="mt-6">
                 <span className="inline-block bg-blue-600 text-white px-3 py-1 rounded-full font-semibold text-sm">
-                  Match Score: {candidate.matchScore}%
+                  {t('candidates.matchScore', { score: candidate.matchScore })}
                 </span>
               </div>
             </div>

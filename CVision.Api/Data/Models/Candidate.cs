@@ -8,6 +8,7 @@ public class Candidate
     public string? FileHash { get; set; }
     public ProcessingStatus Status { get; set; } = ProcessingStatus.Pending;
     public string? ErrorMessage { get; set; }
+    public string Language { get; set; } = "da"; // Language for CV parsing (da/en)
 
     public int JobId { get; set; }
     public Job? Job { get; set; }

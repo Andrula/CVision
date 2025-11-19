@@ -1,11 +1,19 @@
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const Header = () => {
+  const { t, i18n } = useTranslation();
   const { darkMode, toggleDarkMode } = useTheme();
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
+
+  const toggleLanguage = () => {
+    const newLang = i18n.language === 'en' ? 'da' : 'en';
+    i18n.changeLanguage(newLang);
+    localStorage.setItem('language', newLang);
+  };
 
   const handleLogout = () => {
     logout();
@@ -29,7 +37,7 @@ const Header = () => {
               onClick={handleLogout}
               className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition"
             >
-              Logout
+              {t('auth.logout')}
             </button>
           </div>
         ) : (
@@ -38,21 +46,31 @@ const Header = () => {
               to="/login"
               className="px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
             >
-              Login
+              {t('auth.login')}
             </Link>
             <Link
               to="/register"
               className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition"
             >
-              Sign Up
+              {t('auth.signUp')}
             </Link>
           </div>
         )}
 
-        {/* Toggle Switch */}
+        {/* Language Toggle */}
+        <button
+          onClick={toggleLanguage}
+          className="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition border border-gray-300 dark:border-gray-600"
+          title="Switch language"
+        >
+          {i18n.language === 'en' ? '🇬🇧 EN' : '🇩🇰 DA'}
+        </button>
+
+        {/* Dark Mode Toggle Switch */}
         <div
           onClick={toggleDarkMode}
           className="w-12 h-6 flex items-center bg-gray-300 dark:bg-blue-600 rounded-full p-1 cursor-pointer transition-colors duration-300"
+          title="Toggle dark mode"
         >
           <div
             className={`w-4 h-4 rounded-full shadow-md transform transition-transform duration-300 ${

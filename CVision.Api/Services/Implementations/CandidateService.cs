@@ -78,7 +78,7 @@ public class CandidateService : ICandidateService
             .FirstOrDefaultAsync(p => p.Id == id && p.Job!.CompanyId == companyId);
     }
 
-    public async Task<Candidate> UploadCandidateAsync(int jobId, int companyId, IFormFile file, string userId)
+    public async Task<Candidate> UploadCandidateAsync(int jobId, int companyId, IFormFile file, string userId, string language = "da")
     {
         _logger.LogInformation("Starting CV upload for job {JobId}, file: {FileName}, size: {FileSize}KB", 
             jobId, file.FileName, file.Length / 1024);
@@ -126,7 +126,8 @@ public class CandidateService : ICandidateService
                 UploadedAt = DateTime.UtcNow,
                 FileHash = fileHash,
                 Status = ProcessingStatus.Pending,
-                Name = "Processing..."
+                Name = "Processing...",
+                Language = language
             };
 
             _context.Candidates.Add(candidate);

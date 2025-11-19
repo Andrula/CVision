@@ -17,10 +17,11 @@ public class PythonCVParserService : IPythonCvParserService
     }
 
     public async Task<CandidateProfileDTO?> ParseCandidateFromFileAsync(
-        IFormFile file, 
-        int jobId, 
-        string jobTitle, 
-        string jobDescription)
+        IFormFile file,
+        int jobId,
+        string jobTitle,
+        string jobDescription,
+        string language = "da")
     {
         var content = new MultipartFormDataContent();
 
@@ -34,6 +35,9 @@ public class PythonCVParserService : IPythonCvParserService
         var jobFileContent = new StreamContent(jobStream);
         jobFileContent.Headers.ContentType = new MediaTypeHeaderValue("text/plain");
         content.Add(jobFileContent, "job_file", "job.txt");
+
+        // Add language parameter
+        content.Add(new StringContent(language), "language");
 
         var url = $"{_settings.ServiceUrl}/parse-cv/";
         

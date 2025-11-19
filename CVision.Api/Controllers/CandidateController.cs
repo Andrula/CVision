@@ -43,13 +43,13 @@ public class CandidatesController : ControllerBase
     }
 
     [HttpPost("upload")]
-    public async Task<IActionResult> Upload([FromForm] int jobId, [FromForm] IFormFile file)
+    public async Task<IActionResult> Upload([FromForm] int jobId, [FromForm] IFormFile file, [FromForm] string language = "da")
     {
         try
         {
             var companyId = GetCompanyId();
             var userId = GetUserId();
-            var candidate = await _candidateService.UploadCandidateAsync(jobId, companyId, file, userId);
+            var candidate = await _candidateService.UploadCandidateAsync(jobId, companyId, file, userId, language);
             return Ok(candidate);
         }
         catch (ArgumentException ex)

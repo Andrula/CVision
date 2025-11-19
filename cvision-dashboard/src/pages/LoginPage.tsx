@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import { login } from "../services/authService";
 
 export default function LoginPage() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -53,10 +55,10 @@ export default function LoginPage() {
             CVision
           </h1>
           <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
-            Welcome Back
+            {t('auth.welcomeBack')}
           </h2>
           <p className="text-gray-600 dark:text-gray-400 mt-2">
-            Sign in to your account
+            {t('auth.signInToAccount')}
           </p>
         </div>
 
@@ -72,7 +74,7 @@ export default function LoginPage() {
               htmlFor="email"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Email Address
+              {t('auth.emailAddress')}
             </label>
             <input
               id="email"
@@ -92,7 +94,7 @@ export default function LoginPage() {
               htmlFor="password"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Password
+              {t('auth.password')}
             </label>
             <div className="relative">
               <input
@@ -133,18 +135,18 @@ export default function LoginPage() {
                      focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
                      dark:focus:ring-offset-gray-800"
           >
-            {isLoading ? "Signing in..." : "Sign In"}
+            {isLoading ? t('auth.signingIn') : t('auth.signIn')}
           </button>
         </form>
 
         <div className="mt-6 text-center">
           <p className="text-gray-600 dark:text-gray-400">
-            Don't have an account?{" "}
+            {t('auth.noAccount')}{" "}
             <Link
               to="/register"
               className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
             >
-              Sign up
+              {t('auth.signUp')}
             </Link>
           </p>
         </div>

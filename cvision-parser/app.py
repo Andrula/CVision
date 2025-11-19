@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
 from openai import OpenAI
 from dotenv import load_dotenv
@@ -8,6 +8,7 @@ import os
 import time
 import json
 import re
+from typing import Optional
 
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -49,22 +50,8 @@ async def upload_to_openai(upload_file: UploadFile, label: str, override_name: s
     os.unlink(temp_path)
     return file_obj.id
 
-@app.post("/parse-cv/")
-async def parse_cv(cv_file: UploadFile = File(...), job_file: UploadFile = File(...)):
-    try:
-        start = time.time()
-
-        cv_file_id = await upload_to_openai(cv_file, "CV", "cv.pdf")
-
-        job_text = (await job_file.read()).decode("utf-8")
-        job_pdf_path = create_temp_pdf(job_text)
-        with open(job_pdf_path, "rb") as f:
-            job_file_obj = client.files.create(file=("job_description.pdf", f), purpose="user_data")
-        job_file_id = job_file_obj.id
-        os.unlink(job_pdf_path)
-        print(f"[JOB] Uploaded job description PDF with file_id: {job_file_id}")
-
-        prompt_text = """
+def get_danish_prompt():
+    return """
         Læs begge dokumenter og returnér følgende som gyldig JSON:
 
         {
@@ -99,6 +86,66 @@ async def parse_cv(cv_file: UploadFile = File(...), job_file: UploadFile = File(
         Ingen forklaringer. Kun gyldig JSON. Alt output skal være på dansk.
         """
 
+def get_english_prompt():
+    return """
+        Read both documents and return the following as valid JSON:
+
+        {
+          "name": str,
+          "email": str,
+          "phone": str,
+          "location": str,
+          "experienceYears": int,
+          "profileSummary": str,
+          "matchScore": int (0-100),
+          "skills": [str],  // A list of individual professional skills mentioned in the CV. Each skill should be concrete and standalone – e.g., "C#", "truck license", "customer service", "warehouse management", "Python", "cashier operations", "Excel". Avoid grouping multiple skills in one entry.
+          "strengths": [str],
+          "weaknesses": [str],
+          "analysisSummary": str
+        }
+
+        Add the "experienceYears" field as the estimated number of years the candidate has relevant professional experience.
+
+        Scoring:
+        - 90-100: The candidate meets almost all requirements in the job posting and has strong relevant experience and motivation.
+        - 80-89: The candidate meets many requirements and has good experience and potential.
+        - 70-79: The candidate matches some of the requirements and has relevant experience but lacks some key competencies.
+        - 60-69: The candidate has partial experience or knowledge but doesn't match the main requirements.
+        - 0-59: The candidate has very little relevant experience or qualifications in relation to the job posting.
+
+        The score should be as objective as possible and take into account both documented experience and mentioned skills in relation to the job posting.
+
+        "Strengths and analysis can mention other qualities that could be valuable to the team, even if they don't fit the job 1:1. Weaknesses could be things like distance from residence to the job, unless it's remote work."
+
+        "Skills should not be collected as one sentence or list. Each entry in the list should be a single, specific skill mentioned in the CV regardless of whether it's a technical, practical, or customer-facing competence. Include only skills that are relevant to the position in question (job description). Exclude soft skills or general experiences that don't support the technical work, unless mentioned as important in the job posting."
+
+        No explanations. Only valid JSON. All output should be in English.
+        """
+
+@app.post("/parse-cv/")
+async def parse_cv(
+    cv_file: UploadFile = File(...),
+    job_file: UploadFile = File(...),
+    language: Optional[str] = Form("da")  # Default to Danish
+):
+    try:
+        start = time.time()
+
+        cv_file_id = await upload_to_openai(cv_file, "CV", "cv.pdf")
+
+        job_text = (await job_file.read()).decode("utf-8")
+        job_pdf_path = create_temp_pdf(job_text)
+        with open(job_pdf_path, "rb") as f:
+            job_file_obj = client.files.create(file=("job_description.pdf", f), purpose="user_data")
+        job_file_id = job_file_obj.id
+        os.unlink(job_pdf_path)
+        print(f"[JOB] Uploaded job description PDF with file_id: {job_file_id}")
+
+        # Select prompt based on language
+        if language == "en":
+            prompt_text = get_english_prompt()
+        else:
+            prompt_text = get_danish_prompt()
 
         response = client.responses.create(
             model="gpt-4o-mini",

@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState, DragEvent } from "react";
+import { useTranslation } from "react-i18next";
 import Header from "../components/Header";
 import { fetchSkillDistribution } from "../services/api";
 import CandidateRow from "../components/CandidateRow";
@@ -8,6 +9,7 @@ import SkillDistributionChart from "../components/SkillDistributionChart";
 import ExperienceMatchScoreCorrelation from "../components/ExperienceMatchScoreCorrelation";
 
 const JobDetail = () => {
+  const { t, i18n } = useTranslation();
   const { id } = useParams();
   const [job, setJob] = useState<any>(null);
   const [candidates, setCandidates] = useState<any[]>([]);
@@ -115,6 +117,7 @@ const JobDetail = () => {
       const formData = new FormData();
       formData.append("file", file);
       formData.append("jobId", id!.toString());
+      formData.append("language", i18n.language); // Send current language for parsing
 
       try {
         const res = await fetch("http://localhost:5000/api/candidates/upload", {
@@ -140,8 +143,8 @@ const JobDetail = () => {
     await fetchCandidates();
   };
 
-  if (loading) return <p className="p-6">Loading...</p>;
-  if (!job) return <p className="p-6">Job not found.</p>;
+  if (loading) return <p className="p-6">{t('common.loading')}</p>;
+  if (!job) return <p className="p-6">{t('jobs.jobNotFound')}</p>;
 
   return (
     <>
@@ -158,7 +161,7 @@ const JobDetail = () => {
                 <div className="flex flex-col items-center justify-center space-y-4">
                   <div className="w-10 h-10 border-4 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
                   <p className="text-blue-600 dark:text-blue-400 font-semibold">
-                    Behandler {uploadingIndex} ud af {selectedFiles.length} ansøgere...
+                    {t('upload.processingCVs', { current: uploadingIndex, total: selectedFiles.length })}
                   </p>
                 </div>
               </div>
@@ -179,9 +182,9 @@ const JobDetail = () => {
                 onDragLeave={() => setIsDragging(false)}
                 onDrop={handleDrop}
               >
-                <p className="text-lg mb-2">Drag & drop CVs here or click to upload</p>
+                <p className="text-lg mb-2">{t('upload.dragDrop')}</p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  PDF, DOCX, etc. — multiple files supported
+                  {t('upload.fileTypes')}
                 </p>
                 <input
                   type="file"
@@ -198,7 +201,7 @@ const JobDetail = () => {
                     onClick={handleUpload}
                     className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
                   >
-                    Upload {selectedFiles.length} file{selectedFiles.length > 1 ? "s" : ""}
+                    {t('jobs.uploadFiles', { count: selectedFiles.length })}
                   </button>
                 </div>
               )}
@@ -212,17 +215,17 @@ const JobDetail = () => {
                     onClick={() => navigate(`/`)}
                     className="text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1"
                   >
-                    ← Tilbage
+                    ← {t('common.back')}
                   </button>
 
                   <h1 className="text-xl font-bold text-blue-700 dark:text-blue-400">{job.title}</h1>
 
                   <span className="text-xs bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-full flex items-center gap-1">
-                    👥 {candidates.length} {candidates.length === 1 ? "Ansøger" : "Ansøgere"}
+                    👥 {candidates.length} {candidates.length === 1 ? t('jobs.applicant') : t('jobs.applicants')}
                   </span>
 
                   <span className="text-xs bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-full flex items-center gap-1">
-                    📅 {job.createdAt ? new Date(job.createdAt).toLocaleDateString() : "Ukendt"}
+                    📅 {job.createdAt ? new Date(job.createdAt).toLocaleDateString() : t('common.unknown')}
                   </span>
                 </div>
 
@@ -232,21 +235,21 @@ const JobDetail = () => {
                     onClick={() => {/* download logic */ }}
                     className="text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
                   >
-                    Download rapport
+                    {t('jobs.downloadReport')}
                   </button>
 
                   <button
                     onClick={() => fileInputRef.current?.click()}
                     className="text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
                   >
-                    Tilføj flere CV’er
+                    {t('jobs.addMoreCVs')}
                   </button>
 
                   <button
                     onClick={() => setCandidates([])}
                     className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
                   >
-                    Slet alle
+                    {t('jobs.deleteAll')}
                   </button>
                 </div>
 
@@ -270,7 +273,7 @@ const JobDetail = () => {
 
                 <div className="bg-white dark:bg-gray-800 rounded shadow p-4 h-fit">
                   <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">
-                    Ansøgere ({candidates.length})
+                    {t('jobs.applicants')} ({candidates.length})
                   </h2>
                   <div className="space-y-4">
                     {candidates

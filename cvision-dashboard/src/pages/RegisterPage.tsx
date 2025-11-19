@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import { register } from "../services/authService";
 
 export default function RegisterPage() {
+  const { t } = useTranslation();
   const [fullName, setFullName] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [email, setEmail] = useState("");
@@ -21,12 +23,12 @@ export default function RegisterPage() {
     setError("");
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setError(t('auth.passwordMismatch'));
       return;
     }
 
     if (password.length < 6) {
-      setError("Password must be at least 6 characters long");
+      setError(t('auth.passwordMinLength'));
       return;
     }
 
@@ -61,10 +63,10 @@ export default function RegisterPage() {
             CVision
           </h1>
           <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
-            Create Account
+            {t('auth.createAccount')}
           </h2>
           <p className="text-gray-600 dark:text-gray-400 mt-2">
-            Sign up to get started
+            {t('auth.signUpToGetStarted')}
           </p>
         </div>
 
@@ -80,7 +82,7 @@ export default function RegisterPage() {
               htmlFor="fullName"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Full Name
+              {t('auth.fullName')}
             </label>
             <input
               id="fullName"
@@ -101,7 +103,7 @@ export default function RegisterPage() {
               htmlFor="companyName"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Company Name
+              {t('auth.companyName')}
             </label>
             <input
               id="companyName"
@@ -122,7 +124,7 @@ export default function RegisterPage() {
               htmlFor="email"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Email Address
+              {t('auth.emailAddress')}
             </label>
             <input
               id="email"
@@ -142,7 +144,7 @@ export default function RegisterPage() {
               htmlFor="password"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Password
+              {t('auth.password')}
             </label>
             <div className="relative">
               <input
@@ -181,7 +183,7 @@ export default function RegisterPage() {
               htmlFor="confirmPassword"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Confirm Password
+              {t('auth.confirmPassword')}
             </label>
             <div className="relative">
               <input
@@ -223,18 +225,18 @@ export default function RegisterPage() {
                      focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
                      dark:focus:ring-offset-gray-800"
           >
-            {isLoading ? "Creating account..." : "Create Account"}
+            {isLoading ? t('auth.creatingAccount') : t('auth.createAccount')}
           </button>
         </form>
 
         <div className="mt-6 text-center">
           <p className="text-gray-600 dark:text-gray-400">
-            Already have an account?{" "}
+            {t('auth.hasAccount')}{" "}
             <Link
               to="/login"
               className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
             >
-              Sign in
+              {t('auth.signIn')}
             </Link>
           </p>
         </div>

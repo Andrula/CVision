@@ -1,0 +1,85 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleteAll": "Delete All",
+    "save": "Save",
+    "back": "Back",
+    "unknown": "Unknown",
+    "description": "Description",
+    "email": "Email",
+    "profile": "Profile"
+  },
+  "auth": {
+    "welcomeBack": "Welcome Back",
+    "signInToAccount": "Sign in to your account",
+    "signUpToGetStarted": "Sign up to get started",
+    "emailAddress": "Email Address",
+    "password": "Password",
+    "signIn": "Sign In",
+    "signingIn": "Signing in...",
+    "logout": "Logout",
+    "login": "Login",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "signUp": "Sign up",
+    "createAccount": "Create Account",
+    "creatingAccount": "Creating account...",
+    "fullName": "Full Name",
+    "companyName": "Company Name",
+    "confirmPassword": "Confirm Password",
+    "passwordMismatch": "Passwords do not match",
+    "passwordMinLength": "Password must be at least 6 characters long"
+  },
+  "jobs": {
+    "newPosition": "New Position",
+    "jobTitle": "Job Title",
+    "jobDescription": "Enter job description...",
+    "savePosition": "Save Position",
+    "loadingJobs": "Loading jobs...",
+    "jobNotFound": "Job not found.",
+    "applicant": "Applicant",
+    "applicants": "Applicants",
+    "downloadReport": "Download Report",
+    "addMoreCVs": "Add More CVs",
+    "deleteAll": "Delete All",
+    "uploadFiles": "Upload {{count}} file",
+    "uploadFiles_other": "Upload {{count}} files",
+    "createdAt": "Created"
+  },
+  "candidates": {
+    "candidateNotFound": "Candidate not found.",
+    "inviteToInterview": "Invite to Interview",
+    "rejectCandidate": "Reject Candidate",
+    "skills": "Skills",
+    "strengths": "Strengths",
+    "weaknesses": "Weaknesses",
+    "analysis": "Analysis",
+    "matchScore": "Match Score: {{score}}%",
+    "experience": "Experience",
+    "experienceYears": "Experience (years)",
+    "candidates": "Candidates"
+  },
+  "upload": {
+    "dragDrop": "Drag & drop CVs here or click to upload",
+    "fileTypes": "PDF, DOCX, etc. — multiple files supported",
+    "processingCVs": "Processing {{current}} of {{total}} applicants...",
+    "thisMayTakeAMoment": "This may take a moment"
+  },
+  "status": {
+    "pending": "Pending",
+    "processing": "Processing...",
+    "completed": "Completed",
+    "failed": "Failed",
+    "cached": "Cached"
+  },
+  "charts": {
+    "matchScoreBroadDistribution": "Match Score - Broad Distribution",
+    "matchScoreHistogram": "Match Score - Histogram",
+    "skillDistribution": "Skill Distribution",
+    "experienceVsMatchScore": "Experience vs. Match Score",
+    "noSkillData": "No skill data to display yet.",
+    "downloadPNG": "Download PNG"
+  }
+}
