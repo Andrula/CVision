@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { fetchJobs, createJob, Job } from "../services/api";
 import JobCard from "../components/JobCard";
 import Header from "../components/Header";
 
 const JobDashboard = () => {
+  const { t } = useTranslation();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState("");
@@ -32,12 +34,12 @@ const JobDashboard = () => {
 
       <div className="text-center mt-6">
         <h2 className="text-4xl font-extrabold text-blue-700 dark:text-blue-400">CVision</h2>
-        <p className="text-xl font-semibold text-gray-800 dark:text-gray-300 mt-1">Job Positions</p>
+        <p className="text-xl font-semibold text-gray-800 dark:text-gray-300 mt-1">{t('jobs.title')}</p>
         <button
           onClick={() => setShowForm(!showForm)}
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mt-3"
         >
-          {showForm ? "Afbryd" : "Ny stilling"}
+          {showForm ? t('common.cancel') : t('jobs.newPosition')}
         </button>
       </div>
 
@@ -47,13 +49,13 @@ const JobDashboard = () => {
         <div className="max-w-3xl mx-auto space-y-4 border p-4 rounded bg-gray-50 dark:bg-gray-800 mt-6">
           <input
             type="text"
-            placeholder="Job titel"
+            placeholder={t('jobs.jobTitle')}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="w-full p-2 border border-gray-300 rounded bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
           />
           <textarea
-            placeholder="Indtast job beskrivelse..."
+            placeholder={t('jobs.jobDescription')}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={6}
@@ -63,13 +65,13 @@ const JobDashboard = () => {
             onClick={handleAddJob}
             className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
           >
-            Save Position
+            {t('jobs.savePosition')}
           </button>
         </div>
       )}
 
       {loading ? (
-        <p className="text-center text-gray-500 mt-4">Loading jobs...</p>
+        <p className="text-center text-gray-500 mt-4">{t('jobs.loadingJobs')}</p>
       ) : (
         !showForm && ( 
           <div className="flex flex-wrap gap-4 justify-center w-full px-6 pb-8">

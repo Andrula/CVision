@@ -4,16 +4,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 const Header = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { darkMode, toggleDarkMode } = useTheme();
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
-
-  const toggleLanguage = () => {
-    const newLang = i18n.language === 'en' ? 'da' : 'en';
-    i18n.changeLanguage(newLang);
-    localStorage.setItem('language', newLang);
-  };
 
   const handleLogout = () => {
     logout();
@@ -31,7 +25,7 @@ const Header = () => {
         {isAuthenticated ? (
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-700 dark:text-gray-300">
-              Welcome, <span className="font-semibold">{user?.fullName}</span>
+              {t('auth.welcome')}, <span className="font-semibold">{user?.fullName}</span>
             </span>
             <button
               onClick={handleLogout}
@@ -56,15 +50,6 @@ const Header = () => {
             </Link>
           </div>
         )}
-
-        {/* Language Toggle */}
-        <button
-          onClick={toggleLanguage}
-          className="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition border border-gray-300 dark:border-gray-600"
-          title="Switch language"
-        >
-          {i18n.language === 'en' ? '🇬🇧 EN' : '🇩🇰 DA'}
-        </button>
 
         {/* Dark Mode Toggle Switch */}
         <div

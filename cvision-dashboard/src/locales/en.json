@@ -30,9 +30,11 @@
     "companyName": "Company Name",
     "confirmPassword": "Confirm Password",
     "passwordMismatch": "Passwords do not match",
-    "passwordMinLength": "Password must be at least 6 characters long"
+    "passwordMinLength": "Password must be at least 6 characters long",
+    "welcome": "Welcome"
   },
   "jobs": {
+    "title": "Job Positions",
     "newPosition": "New Position",
     "jobTitle": "Job Title",
     "jobDescription": "Enter job description...",
@@ -81,5 +83,13 @@
     "experienceVsMatchScore": "Experience vs. Match Score",
     "noSkillData": "No skill data to display yet.",
     "downloadPNG": "Download PNG"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "selectLanguage": "Select Language",
+    "danish": "Danish",
+    "english": "English",
+    "close": "Close"
   }
 }

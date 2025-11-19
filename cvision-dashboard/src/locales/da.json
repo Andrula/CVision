@@ -30,9 +30,11 @@
     "companyName": "Firmanavn",
     "confirmPassword": "Bekræft adgangskode",
     "passwordMismatch": "Adgangskoderne matcher ikke",
-    "passwordMinLength": "Adgangskoden skal være mindst 6 tegn lang"
+    "passwordMinLength": "Adgangskoden skal være mindst 6 tegn lang",
+    "welcome": "Velkommen"
   },
   "jobs": {
+    "title": "Stillinger",
     "newPosition": "Ny stilling",
     "jobTitle": "Job titel",
     "jobDescription": "Indtast job beskrivelse...",
@@ -81,5 +83,13 @@
     "experienceVsMatchScore": "Erfaring vs. Matchscore",
     "noSkillData": "Ingen skill-data at vise endnu.",
     "downloadPNG": "Download PNG"
+  },
+  "settings": {
+    "title": "Indstillinger",
+    "language": "Sprog",
+    "selectLanguage": "Vælg sprog",
+    "danish": "Dansk",
+    "english": "Engelsk",
+    "close": "Luk"
   }
 }
