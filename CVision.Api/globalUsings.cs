@@ -6,13 +6,10 @@ global using CVision.Api.Configuration;
 global using CVision.Api.Services.Interfaces;
 global using Microsoft.Extensions.Options;
 global using System.Net.Http.Headers;
-<<<<<<< HEAD
 global using CVision.Api.Services.Implementations;
 global using Serilog;
 global using Serilog.Events;
 global using CVision.Api.Middleware;
-=======
 global using CVision.Api.Data.Models;
 global using CVision.Api.Data;
->>>>>>> origin/feature/identity-authentication
 

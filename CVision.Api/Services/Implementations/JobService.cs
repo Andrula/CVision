@@ -13,14 +13,11 @@ public class JobService : IJobService
 
     public async Task<IEnumerable<JobWithCountDto>> GetAllJobsAsync(int companyId)
     {
-<<<<<<< HEAD
         _logger.LogDebug("Fetching all jobs");
         
-        var jobs = await _context.Jobs
-=======
         return await _context.Jobs
             .Where(j => j.CompanyId == companyId)
->>>>>>> origin/feature/identity-authentication
+
             .Select(j => new JobWithCountDto
             {
                 Id = j.Id,
@@ -30,15 +27,11 @@ public class JobService : IJobService
                 ApplicantCount = _context.Candidates.Count(c => c.JobId == j.Id)
             })
             .ToListAsync();
-        
-        _logger.LogInformation("Retrieved {Count} jobs", jobs.Count());
-        
-        return jobs;
     }
 
     public async Task<Job?> GetJobByIdAsync(int id, int companyId)
     {
-<<<<<<< HEAD
+
         _logger.LogDebug("Fetching job {JobId}", id);
         
         var job = await _context.Jobs.FindAsync(id);
@@ -46,11 +39,8 @@ public class JobService : IJobService
         if (job == null)
             _logger.LogWarning("Job {JobId} not found", id);
         
-        return job;
-=======
         return await _context.Jobs
             .FirstOrDefaultAsync(j => j.Id == id && j.CompanyId == companyId);
->>>>>>> origin/feature/identity-authentication
     }
 
     public async Task<Job> CreateJobAsync(Job job)
@@ -79,14 +69,11 @@ public class JobService : IJobService
 
     public async Task<bool> DeleteJobAsync(int id, int companyId)
     {
-<<<<<<< HEAD
         _logger.LogInformation("Attempting to delete job {JobId}", id);
-        
-        var job = await _context.Jobs.FindAsync(id);
-=======
+
         var job = await _context.Jobs
             .FirstOrDefaultAsync(j => j.Id == id && j.CompanyId == companyId);
->>>>>>> origin/feature/identity-authentication
+
         if (job == null)
         {
             _logger.LogWarning("Delete attempted for non-existent job {JobId}", id);
