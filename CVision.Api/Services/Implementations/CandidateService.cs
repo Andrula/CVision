@@ -19,10 +19,11 @@ public class CandidateService : ICandidateService
         _logger = logger;
     }
 
-    public async Task<IEnumerable<object>> GetCandidatesForJobAsync(int jobId)
+    public async Task<IEnumerable<object>> GetCandidatesForJobAsync(int jobId, int companyId)
     {
         return await _context.CandidateProfiles
-            .Where(p => p.JobId == jobId)
+            .Include(p => p.Job)
+            .Where(p => p.JobId == jobId && p.Job!.CompanyId == companyId)
             .Select(p => new
             {
                 p.Id,
@@ -34,10 +35,11 @@ public class CandidateService : ICandidateService
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<object>> GetCandidatesWithMatchScoreAsync(int jobId)
+    public async Task<IEnumerable<object>> GetCandidatesWithMatchScoreAsync(int jobId, int companyId)
     {
         return await _context.Candidates
-            .Where(c => c.JobId == jobId)
+            .Include(c => c.Job)
+            .Where(c => c.JobId == jobId && c.Job!.CompanyId == companyId)
             .Select(c => new
             {
                 c.Id,
@@ -51,25 +53,29 @@ public class CandidateService : ICandidateService
             .ToListAsync();
     }
 
-    public async Task<CandidateProfile?> GetProfileAsync(int id)
+    public async Task<CandidateProfile?> GetProfileAsync(int id, int companyId)
     {
-        return await _context.CandidateProfiles.FindAsync(id);
+        return await _context.CandidateProfiles
+            .Include(p => p.Job)
+            .FirstOrDefaultAsync(p => p.Id == id && p.Job!.CompanyId == companyId);
     }
 
-    public async Task<Candidate> UploadCandidateAsync(int jobId, IFormFile file)
+    public async Task<Candidate> UploadCandidateAsync(int jobId, int companyId, IFormFile file, string userId)
     {
         if (file == null || file.Length == 0)
             throw new ArgumentException("No file uploaded.");
 
-        var job = await _context.Jobs.FindAsync(jobId);
+        var job = await _context.Jobs
+            .FirstOrDefaultAsync(j => j.Id == jobId && j.CompanyId == companyId);
         if (job == null)
-            throw new InvalidOperationException($"Job with ID {jobId} not found.");
+            throw new InvalidOperationException($"Job with ID {jobId} not found or access denied.");
 
         var candidate = new Candidate
         {
             JobId = jobId,
             FileName = file.FileName,
             UploadedAt = DateTime.UtcNow,
+            UploadedBy = userId,
             Name = "Parsing..."
         };
 
@@ -101,6 +107,7 @@ public class CandidateService : ICandidateService
                     Weaknesses = JsonSerializer.Serialize(parsed.Weaknesses),
                     AnalysisSummary = parsed.AnalysisSummary,
                     CreatedAt = DateTime.UtcNow,
+                    CreatedBy = userId,
                     CandidateId = candidate.Id
                 };
 
@@ -128,8 +135,14 @@ public class CandidateService : ICandidateService
         }
     }
 
-    public async Task<CandidateProfile> SaveProfileAsync(CandidateProfileDTO dto)
+    public async Task<CandidateProfile> SaveProfileAsync(CandidateProfileDTO dto, int companyId, string userId)
     {
+        // Verify job belongs to company
+        var job = await _context.Jobs
+            .FirstOrDefaultAsync(j => j.Id == dto.JobId && j.CompanyId == companyId);
+        if (job == null)
+            throw new InvalidOperationException($"Job with ID {dto.JobId} not found or access denied.");
+
         var profile = new CandidateProfile
         {
             JobId = dto.JobId,
@@ -144,7 +157,8 @@ public class CandidateService : ICandidateService
             Strengths = JsonSerializer.Serialize(dto.Strengths),
             Weaknesses = JsonSerializer.Serialize(dto.Weaknesses),
             AnalysisSummary = dto.AnalysisSummary,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            CreatedBy = userId
         };
 
         _context.CandidateProfiles.Add(profile);
@@ -154,9 +168,11 @@ public class CandidateService : ICandidateService
         return profile;
     }
 
-    public async Task<Stream?> GetCandidateCvStreamAsync(int id)
+    public async Task<Stream?> GetCandidateCvStreamAsync(int id, int companyId)
     {
-        var profile = await _context.CandidateProfiles.FindAsync(id);
+        var profile = await _context.CandidateProfiles
+            .Include(p => p.Job)
+            .FirstOrDefaultAsync(p => p.Id == id && p.Job!.CompanyId == companyId);
         if (profile == null || string.IsNullOrEmpty(profile.FileName))
             return null;
 

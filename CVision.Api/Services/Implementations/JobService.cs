@@ -11,9 +11,10 @@ public class JobService : IJobService
         _logger = logger;
     }
 
-    public async Task<IEnumerable<JobWithCountDto>> GetAllJobsAsync()
+    public async Task<IEnumerable<JobWithCountDto>> GetAllJobsAsync(int companyId)
     {
         return await _context.Jobs
+            .Where(j => j.CompanyId == companyId)
             .Select(j => new JobWithCountDto
             {
                 Id = j.Id,
@@ -25,9 +26,10 @@ public class JobService : IJobService
             .ToListAsync();
     }
 
-    public async Task<Job?> GetJobByIdAsync(int id)
+    public async Task<Job?> GetJobByIdAsync(int id, int companyId)
     {
-        return await _context.Jobs.FindAsync(id);
+        return await _context.Jobs
+            .FirstOrDefaultAsync(j => j.Id == id && j.CompanyId == companyId);
     }
 
     public async Task<Job> CreateJobAsync(Job job)
@@ -46,9 +48,10 @@ public class JobService : IJobService
         return job;
     }
 
-    public async Task<bool> DeleteJobAsync(int id)
+    public async Task<bool> DeleteJobAsync(int id, int companyId)
     {
-        var job = await _context.Jobs.FindAsync(id);
+        var job = await _context.Jobs
+            .FirstOrDefaultAsync(j => j.Id == id && j.CompanyId == companyId);
         if (job == null)
             return false;
 
@@ -59,10 +62,11 @@ public class JobService : IJobService
         return true;
     }
 
-    public async Task<IEnumerable<object>> GetSkillDistributionAsync(int jobId)
+    public async Task<IEnumerable<object>> GetSkillDistributionAsync(int jobId, int companyId)
     {
         var profiles = await _context.CandidateProfiles
-            .Where(p => p.JobId == jobId && p.Skills != null)
+            .Include(p => p.Job)
+            .Where(p => p.JobId == jobId && p.Job!.CompanyId == companyId && p.Skills != null)
             .ToListAsync();
 
         var allSkills = profiles
