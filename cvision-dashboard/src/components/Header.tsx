@@ -23,7 +23,7 @@ const Header = () => {
         {isAuthenticated ? (
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-700 dark:text-gray-300">
-              Welcome, <span className="font-semibold">{user?.name}</span>
+              Welcome, <span className="font-semibold">{user?.fullName}</span>
             </span>
             <button
               onClick={handleLogout}

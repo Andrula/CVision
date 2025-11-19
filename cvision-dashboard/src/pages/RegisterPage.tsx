@@ -34,7 +34,17 @@ export default function RegisterPage() {
 
     try {
       const response = await register({ fullName, companyName, email, password });
-      authLogin(response.user, response.token);
+
+      // Map flat response to user object
+      const user = {
+        email: response.email,
+        fullName: response.fullName,
+        companyId: response.companyId,
+        companyName: response.companyName,
+        roles: response.roles
+      };
+
+      authLogin(user, response.token);
       navigate("/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed. Please try again.");

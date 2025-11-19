@@ -14,11 +14,12 @@ export interface RegisterRequest {
 
 export interface AuthResponse {
   token: string;
-  user: {
-    id: string;
-    email: string;
-    name: string;
-  };
+  email: string;
+  fullName: string;
+  companyId: number;
+  companyName: string;
+  roles: string[];
+  expiresAt: string;
 }
 
 export async function login(credentials: LoginRequest): Promise<AuthResponse> {

@@ -1,9 +1,11 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
 interface User {
-  id: string;
   email: string;
-  name: string;
+  fullName: string;
+  companyId: number;
+  companyName: string;
+  roles: string[];
 }
 
 interface AuthContextType {
@@ -18,15 +20,32 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(() => {
-    const savedUser = localStorage.getItem("user");
-    return savedUser ? JSON.parse(savedUser) : null;
+    try {
+      const savedUser = localStorage.getItem("user");
+      if (!savedUser || savedUser === "undefined" || savedUser === "null") {
+        return null;
+      }
+      return JSON.parse(savedUser);
+    } catch (error) {
+      console.error("Failed to parse user from localStorage:", error);
+      localStorage.removeItem("user");
+      return null;
+    }
   });
 
   const [token, setToken] = useState<string | null>(() => {
-    return localStorage.getItem("token");
+    const savedToken = localStorage.getItem("token");
+    if (!savedToken || savedToken === "undefined" || savedToken === "null") {
+      return null;
+    }
+    return savedToken;
   });
 
   const login = (user: User, token: string) => {
+    if (!user || !token) {
+      console.error("Cannot login with invalid user or token:", { user, token });
+      return;
+    }
     setUser(user);
     setToken(token);
     localStorage.setItem("user", JSON.stringify(user));

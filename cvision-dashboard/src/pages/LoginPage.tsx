@@ -19,9 +19,26 @@ export default function LoginPage() {
 
     try {
       const response = await login({ email, password });
-      authLogin(response.user, response.token);
+      console.log("Login response:", response);
+
+      if (!response.token || !response.email) {
+        setError("Invalid response from server. Please try again.");
+        return;
+      }
+
+      // Map flat response to user object
+      const user = {
+        email: response.email,
+        fullName: response.fullName,
+        companyId: response.companyId,
+        companyName: response.companyName,
+        roles: response.roles
+      };
+
+      authLogin(user, response.token);
       navigate("/dashboard");
     } catch (err) {
+      console.error("Login error:", err);
       setError(err instanceof Error ? err.message : "Login failed. Please try again.");
     } finally {
       setIsLoading(false);
