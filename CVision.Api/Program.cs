@@ -27,7 +27,7 @@ Log.Logger = new LoggerConfiguration()
 try
 {
     Log.Information("Starting CVision API...");
-    
+
     var builder = WebApplication.CreateBuilder(args);
 
     builder.Host.UseSerilog();
@@ -50,6 +50,15 @@ try
     builder.Services.Configure<JwtSettings>(
         builder.Configuration.GetSection("JwtSettings"));
 
+    // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen();
+    builder.Services.AddControllers();
+    builder.Services.AddHttpClient<IPythonCvParserService, PythonCVParserService>(client =>
+    {
+        client.Timeout = TimeSpan.FromMinutes(5);
+    });
+
     // Database Context
     builder.Services.AddDbContext<AppDbContext>(options =>
         options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -61,7 +70,7 @@ try
         options.Password.RequireDigit = true;
         options.Password.RequireLowercase = true;
         options.Password.RequireUppercase = true;
-        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequireNonAlphanomeric = false;
         options.Password.RequiredLength = 6;
 
         // User settings
@@ -99,13 +108,6 @@ try
 
     builder.Services.AddAuthorization();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
     // CORS
     builder.Services.AddCors(options =>
     {
@@ -118,6 +120,29 @@ if (app.Environment.IsDevelopment())
             });
     });
 
-app.MapControllers();
+    var app = builder.Build();
 
-app.Run();
+    // Configure the HTTP request pipeline.
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
+
+    app.UseCors(AllowFrontendCommunication);
+    app.UseHttpsRedirection();
+    app.UseAuthentication();
+    app.UseAuthorization();
+
+    app.MapControllers();
+
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
