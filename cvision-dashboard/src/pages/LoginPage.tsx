@@ -21,12 +21,21 @@ export default function LoginPage() {
       const response = await login({ email, password });
       console.log("Login response:", response);
 
-      if (!response.user || !response.token) {
+      if (!response.token || !response.email) {
         setError("Invalid response from server. Please try again.");
         return;
       }
 
-      authLogin(response.user, response.token);
+      // Map flat response to user object
+      const user = {
+        email: response.email,
+        fullName: response.fullName,
+        companyId: response.companyId,
+        companyName: response.companyName,
+        roles: response.roles
+      };
+
+      authLogin(user, response.token);
       navigate("/dashboard");
     } catch (err) {
       console.error("Login error:", err);
