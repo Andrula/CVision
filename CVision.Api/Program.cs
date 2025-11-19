@@ -1,6 +1,9 @@
 using CVision.Api.Configuration;
+using CVision.Api.Services;
 using CVision.Api.Services.Implementations;
 using CVision.Api.Services.Interfaces;
+using Hangfire;
+using Hangfire.PostgreSql;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +13,7 @@ var AllowFrontendCommunication = "_AllowFrontendCommunication";
 builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 builder.Services.AddScoped<ICandidateService, CandidateService>();
 builder.Services.AddScoped<IJobService, JobService>();
+builder.Services.AddScoped<ICvProcessingJob, CvProcessingJob>();
 
 builder.Services.Configure<FileStorageSettings>(
     builder.Configuration.GetSection("FileStorage"));
@@ -29,6 +33,26 @@ builder.Services.AddHttpClient<IPythonCvParserService, PythonCVParserService>(cl
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Configure Hangfire
+builder.Services.AddHangfire(config => config
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UsePostgreSqlStorage(options =>
+        options.UseNpgsqlConnection(builder.Configuration.GetConnectionString("DefaultConnection"))));
+
+builder.Services.AddHangfireServer(options =>
+{
+    options.WorkerCount = 2; // Number of concurrent workers
+});
+
+// Configure automatic retry for failed jobs
+GlobalJobFilters.Filters.Add(new AutomaticRetryAttribute
+{
+    Attempts = 3, // Retry up to 3 times
+    DelaysInSeconds = new[] { 60, 300, 900 } // Wait 1min, 5min, 15min between retries
+});
 
 builder.Services.AddCors(options =>
 {
@@ -53,5 +77,11 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors(AllowFrontendCommunication);
 app.UseHttpsRedirection();
+
+// Add Hangfire Dashboard (accessible at /hangfire)
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = new[] { new HangfireAuthorizationFilter() }
+});
 
 app.Run();

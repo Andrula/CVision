@@ -1,9 +1,13 @@
 public class Candidate
 {
     public int Id { get; set; }
-    public string? Name { get; set; } 
+    public string? Name { get; set; }
     public string FileName {get; set;}
     public DateTime UploadedAt { get; set; }
+    public DateTime? ParsedAt { get; set; }
+    public string? FileHash { get; set; }
+    public ProcessingStatus Status { get; set; } = ProcessingStatus.Pending;
+    public string? ErrorMessage { get; set; }
 
     public int JobId { get; set; }
     public Job Job { get; set; }
