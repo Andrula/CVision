@@ -30,7 +30,7 @@ Log.Logger = new LoggerConfiguration()
 try
 {
     Log.Information("Starting CVision API...");
-  
+
     var builder = WebApplication.CreateBuilder(args);
 
     builder.Host.UseSerilog();
@@ -43,33 +43,60 @@ try
     builder.Services.AddScoped<IJobService, JobService>();
     builder.Services.AddScoped<IAuthService, AuthService>();
     builder.Services.AddScoped<IPythonCvParserService, PythonCVParserService>();
-    builder.Services.AddScoped<ICandidateService, CandidateService>();
     builder.Services.AddScoped<ICvProcessingJob, CvProcessingJob>();
 
-// Configure Hangfire
-builder.Services.AddHangfire(config => config
-    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-    .UseSimpleAssemblyNameTypeSerializer()
-    .UseRecommendedSerializerSettings()
-    .UsePostgreSqlStorage(options =>
-        options.UseNpgsqlConnection(builder.Configuration.GetConnectionString("DefaultConnection"))));
+    builder.Services.Configure<FileStorageSettings>(
+        builder.Configuration.GetSection("FileStorage"));
+    builder.Services.Configure<CvParserSettings>(
+        builder.Configuration.GetSection("CvParser"));
+    builder.Services.Configure<CorsSettings>(
+        builder.Configuration.GetSection("Cors"));
 
-builder.Services.AddHangfireServer(options =>
-{
-    options.WorkerCount = 2; // Number of concurrent workers
-});
+    // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen();
+    builder.Services.AddControllers();
+    builder.Services.AddHttpClient<IPythonCvParserService, PythonCVParserService>(client =>
+    {
+        client.Timeout = TimeSpan.FromMinutes(5);
+    });
 
-// Configure automatic retry for failed jobs
-GlobalJobFilters.Filters.Add(new AutomaticRetryAttribute
-{
-    Attempts = 3, // Retry up to 3 times
-    DelaysInSeconds = new[] { 60, 300, 900 } // Wait 1min, 5min, 15min between retries
-});
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy(name: AllowFrontendCommunication,
-        policy =>
+    // Configure Hangfire
+    builder.Services.AddHangfire(config => config
+        .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+        .UseSimpleAssemblyNameTypeSerializer()
+        .UseRecommendedSerializerSettings()
+        .UsePostgreSqlStorage(options =>
+            options.UseNpgsqlConnection(builder.Configuration.GetConnectionString("DefaultConnection"))));
+
+    builder.Services.AddHangfireServer(options =>
+    {
+        options.WorkerCount = 2; // Number of concurrent workers
+    });
+
+    // Configure automatic retry for failed jobs
+    GlobalJobFilters.Filters.Add(new AutomaticRetryAttribute
+    {
+        Attempts = 3, // Retry up to 3 times
+        DelaysInSeconds = new[] { 60, 300, 900 } // Wait 1min, 5min, 15min between retries
+    });
+
+    // JWT Authentication
+    var jwtSettings = builder.Configuration.GetSection("Jwt");
+    var secretKey = jwtSettings["SecretKey"]
+        ?? throw new InvalidOperationException("JWT SecretKey is not configured");
+
+    builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
             ValidateAudience = true,
@@ -111,10 +138,21 @@ builder.Services.AddCors(options =>
 
     app.MapControllers();
 
-// Add Hangfire Dashboard (accessible at /hangfire)
-app.UseHangfireDashboard("/hangfire", new DashboardOptions
-{
-    Authorization = new[] { new HangfireAuthorizationFilter() }
-});
+    // Add Hangfire Dashboard (accessible at /hangfire)
+    app.UseHangfireDashboard("/hangfire", new DashboardOptions
+    {
+        Authorization = new[] { new HangfireAuthorizationFilter() }
+    });
 
-app.Run();
+    app.Run();
+
+    Log.Information("CVision API stopped cleanly");
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "CVision API terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
