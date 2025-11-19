@@ -6,9 +6,10 @@ export interface LoginRequest {
 }
 
 export interface RegisterRequest {
+  fullName: string;
+  companyName: string;
   email: string;
   password: string;
-  name: string;
 }
 
 export interface AuthResponse {
@@ -24,7 +25,10 @@ export async function login(credentials: LoginRequest): Promise<AuthResponse> {
   const res = await fetch(`${API_BASE}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(credentials),
+    body: JSON.stringify({
+      Email: credentials.email,
+      Password: credentials.password,
+    }),
   });
 
   if (!res.ok) {
@@ -39,7 +43,12 @@ export async function register(userData: RegisterRequest): Promise<AuthResponse>
   const res = await fetch(`${API_BASE}/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(userData),
+    body: JSON.stringify({
+      FullName: userData.fullName,
+      CompanyName: userData.companyName,
+      Email: userData.email,
+      Password: userData.password,
+    }),
   });
 
   if (!res.ok) {
