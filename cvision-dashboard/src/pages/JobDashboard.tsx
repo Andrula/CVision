@@ -50,14 +50,14 @@ const JobDashboard = () => {
             placeholder="Job titel"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full p-2 border rounded dark:bg-gray-700 dark:text-white"
+            className="w-full p-2 border border-gray-300 rounded bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
           />
           <textarea
             placeholder="Indtast job beskrivelse..."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={6}
-            className="w-full p-2 border rounded dark:bg-gray-700 dark:text-white"
+            className="w-full p-2 border border-gray-300 rounded bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
           />
           <button
             onClick={handleAddJob}
