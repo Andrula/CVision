@@ -10,5 +10,12 @@ public class Candidate
     public string? ErrorMessage { get; set; }
 
     public int JobId { get; set; }
-    public Job Job { get; set; }
+    public Job? Job { get; set; }
+
+    // Audit fields
+    public string? UploadedBy { get; set; }
+    public string? UpdatedBy { get; set; }
+
+    // Navigation properties
+    public ICollection<CandidateProfile> Profiles { get; set; } = new List<CandidateProfile>();
 }
