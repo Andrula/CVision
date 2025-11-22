@@ -1,10 +1,12 @@
 using CVision.Api.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CVision.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[AllowAnonymous]
 public class CandidatesController : ControllerBase
 {
     private readonly ICandidateService _candidateService;

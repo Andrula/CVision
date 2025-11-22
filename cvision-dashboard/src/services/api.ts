@@ -17,8 +17,36 @@ export type Candidate = {
   experienceYears: number;
 };
 
+// Helper function to get auth headers
+function getAuthHeaders(): HeadersInit {
+  const token = localStorage.getItem("authToken");
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  return headers;
+}
+
+// Helper function for multipart/form-data requests
+function getAuthHeadersMultipart(): HeadersInit {
+  const token = localStorage.getItem("authToken");
+  const headers: HeadersInit = {};
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  return headers;
+}
+
 export async function fetchJobs(): Promise<Job[]> {
-  const res = await fetch(`${API_BASE}/jobs`);
+  const res = await fetch(`${API_BASE}/jobs`, {
+    headers: getAuthHeaders(),
+  });
   if (!res.ok) throw new Error("Failed to fetch jobs");
   return await res.json();
 }
@@ -26,7 +54,7 @@ export async function fetchJobs(): Promise<Job[]> {
 export async function createJob(job: { title: string; description: string }): Promise<Job> {
   const res = await fetch(`${API_BASE}/jobs`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getAuthHeaders(),
     body: JSON.stringify(job),
   });
   if (!res.ok) throw new Error("Failed to create job");
@@ -34,13 +62,17 @@ export async function createJob(job: { title: string; description: string }): Pr
 }
 
 export async function fetchCandidateProfiles(jobId: number) {
-  const res = await fetch(`${API_BASE}/jobs/${jobId}/profiles`);
+  const res = await fetch(`${API_BASE}/jobs/${jobId}/profiles`, {
+    headers: getAuthHeaders(),
+  });
   if (!res.ok) throw new Error("Failed to fetch candidate profiles");
   return await res.json();
 }
 
 export async function fetchSkillDistribution(jobId: number): Promise<{ skill: string; count: number }[]> {
-  const res = await fetch(`${API_BASE}/jobs/${jobId}/skills`);
+  const res = await fetch(`${API_BASE}/jobs/${jobId}/skills`, {
+    headers: getAuthHeaders(),
+  });
   if (!res.ok) throw new Error("Failed to fetch skill distribution");
   return await res.json();
 }
@@ -49,10 +81,11 @@ export async function uploadCV(jobId: number, file: File): Promise<any> {
   const formData = new FormData();
   formData.append("jobId", String(jobId));
   formData.append("file", file);
-  
+
   console.log("Uploading to backend...");
   const res = await fetch(`${API_BASE}/candidates/upload`, {
     method: "POST",
+    headers: getAuthHeadersMultipart(),
     body: formData,
   });
 

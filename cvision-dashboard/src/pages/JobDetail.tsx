@@ -23,11 +23,14 @@ const JobDetail = () => {
   useEffect(() => {
     const fetchJobAndCandidates = async () => {
       try {
-        const jobRes = await fetch(`http://localhost:5000/api/jobs/${id}`);
+        const token = localStorage.getItem("authToken");
+        const headers: HeadersInit = token ? { "Authorization": `Bearer ${token}` } : {};
+
+        const jobRes = await fetch(`http://localhost:5000/api/jobs/${id}`, { headers });
         const jobData = await jobRes.json();
         setJob(jobData);
 
-        const candRes = await fetch(`http://localhost:5000/api/jobs/${id}/candidates`);
+        const candRes = await fetch(`http://localhost:5000/api/jobs/${id}/candidates`, { headers });
         const candData = await candRes.json();
 
         fetchSkillDistribution(Number(id))
@@ -75,8 +78,12 @@ const JobDetail = () => {
       formData.append("jobId", id!.toString());
 
       try {
+        const token = localStorage.getItem("authToken");
+        const headers: HeadersInit = token ? { "Authorization": `Bearer ${token}` } : {};
+
         const res = await fetch("http://localhost:5000/api/candidates/upload", {
           method: "POST",
+          headers,
           body: formData,
         });
         if (!res.ok) throw new Error("Upload failed");
@@ -95,7 +102,10 @@ const JobDetail = () => {
     setSelectedFiles([]);
 
     try {
-      const candRes = await fetch(`http://localhost:5000/api/jobs/${id}/candidates`);
+      const token = localStorage.getItem("authToken");
+      const headers: HeadersInit = token ? { "Authorization": `Bearer ${token}` } : {};
+
+      const candRes = await fetch(`http://localhost:5000/api/jobs/${id}/candidates`, { headers });
       const candData = await candRes.json();
       setCandidates(candData);
     } catch (err) {
