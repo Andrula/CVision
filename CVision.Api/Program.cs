@@ -48,10 +48,15 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    app.MapControllers();
 }
 
 app.UseCors(AllowFrontendCommunication);
-app.UseHttpsRedirection();
 
+// Only redirect to HTTPS in production
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
+app.MapControllers();
 app.Run();
