@@ -1,0 +1,95 @@
+{
+  "common": {
+    "loading": "Henter data...",
+    "cancel": "Afbryd",
+    "delete": "Slet",
+    "deleteAll": "Slet alle",
+    "save": "Gem",
+    "back": "Tilbage",
+    "unknown": "Ukendt",
+    "description": "Beskrivelse",
+    "email": "E-mail",
+    "profile": "Profil"
+  },
+  "auth": {
+    "welcomeBack": "Velkommen tilbage",
+    "signInToAccount": "Log ind på din konto",
+    "signUpToGetStarted": "Tilmeld dig for at komme i gang",
+    "emailAddress": "E-mail adresse",
+    "password": "Adgangskode",
+    "signIn": "Log ind",
+    "signingIn": "Logger ind...",
+    "logout": "Log ud",
+    "login": "Log ind",
+    "noAccount": "Har du ikke en konto?",
+    "hasAccount": "Har du allerede en konto?",
+    "signUp": "Tilmeld dig",
+    "createAccount": "Opret konto",
+    "creatingAccount": "Opretter konto...",
+    "fullName": "Fulde navn",
+    "companyName": "Firmanavn",
+    "confirmPassword": "Bekræft adgangskode",
+    "passwordMismatch": "Adgangskoderne matcher ikke",
+    "passwordMinLength": "Adgangskoden skal være mindst 6 tegn lang",
+    "welcome": "Velkommen"
+  },
+  "jobs": {
+    "title": "Stillinger",
+    "newPosition": "Ny stilling",
+    "jobTitle": "Job titel",
+    "jobDescription": "Indtast job beskrivelse...",
+    "savePosition": "Gem stilling",
+    "loadingJobs": "Indlæser job...",
+    "jobNotFound": "Job ikke fundet.",
+    "applicant": "Ansøger",
+    "applicants": "Ansøgere",
+    "downloadReport": "Download rapport",
+    "addMoreCVs": "Tilføj flere CV'er",
+    "deleteAll": "Slet alle",
+    "uploadFiles": "Upload {{count}} fil",
+    "uploadFiles_other": "Upload {{count}} filer",
+    "createdAt": "Oprettet"
+  },
+  "candidates": {
+    "candidateNotFound": "Kandidat ikke fundet.",
+    "inviteToInterview": "Inviter til samtale",
+    "rejectCandidate": "Afvis kandidat",
+    "skills": "Færdigheder",
+    "strengths": "Styrker",
+    "weaknesses": "Svagheder",
+    "analysis": "Analyse",
+    "matchScore": "Matchscore: {{score}}%",
+    "experience": "Erfaring",
+    "experienceYears": "Erfaring (år)",
+    "candidates": "Kandidater"
+  },
+  "upload": {
+    "dragDrop": "Træk og slip CV'er her eller klik for at uploade",
+    "fileTypes": "PDF, DOCX, osv. — flere filer understøttet",
+    "processingCVs": "Behandler {{current}} ud af {{total}} ansøgere...",
+    "thisMayTakeAMoment": "Dette kan tage et øjeblik"
+  },
+  "status": {
+    "pending": "Afventer",
+    "processing": "Behandler...",
+    "completed": "Gennemført",
+    "failed": "Fejlet",
+    "cached": "Gemt"
+  },
+  "charts": {
+    "matchScoreBroadDistribution": "Matchscore – bred fordeling",
+    "matchScoreHistogram": "Matchscore – histogram",
+    "skillDistribution": "Skill fordeling",
+    "experienceVsMatchScore": "Erfaring vs. Matchscore",
+    "noSkillData": "Ingen skill-data at vise endnu.",
+    "downloadPNG": "Download PNG"
+  },
+  "settings": {
+    "title": "Indstillinger",
+    "language": "Sprog",
+    "selectLanguage": "Vælg sprog",
+    "danish": "Dansk",
+    "english": "Engelsk",
+    "close": "Luk"
+  }
+}
