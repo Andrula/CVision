@@ -1,3 +1,4 @@
+namespace CVision.Api.Data.Models;
 
 public class CandidateProfile
 {
